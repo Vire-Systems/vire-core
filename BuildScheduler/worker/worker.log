@@ -1,0 +1,33 @@
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/create?name=9726ee7c-bea9-44e8-a07f-a60bcf9379d0 HTTP/1.1" 201 144
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/2d907423dab7ea1d2dbad9d002d4be425946a1b0876ac54abfa42a96e3d1bf66/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/2d907423dab7ea1d2dbad9d002d4be425946a1b0876ac54abfa42a96e3d1bf66/start HTTP/1.1" 204 0
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/2d907423dab7ea1d2dbad9d002d4be425946a1b0876ac54abfa42a96e3d1bf66/logs?stderr=1&stdout=1&timestamps=0&follow=1&tail=all HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/2d907423dab7ea1d2dbad9d002d4be425946a1b0876ac54abfa42a96e3d1bf66/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/archive?path=%2Fworkspace%2Ftest%2Fdist%2F HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/2d907423dab7ea1d2dbad9d002d4be425946a1b0876ac54abfa42a96e3d1bf66/wait HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "DELETE /v1.54/containers/2d907423dab7ea1d2dbad9d002d4be425946a1b0876ac54abfa42a96e3d1bf66?v=False&link=False&force=True HTTP/1.1" 204 0
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/create?name=9726ee7c-bea9-44e8-a07f-a60bcf9379d0 HTTP/1.1" 201 144
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/44f4f9110f5ca73759ac2539235ae5a34acfbb0ef6c51d309e06ca3c8bb06f7c/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/44f4f9110f5ca73759ac2539235ae5a34acfbb0ef6c51d309e06ca3c8bb06f7c/start HTTP/1.1" 204 0
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/44f4f9110f5ca73759ac2539235ae5a34acfbb0ef6c51d309e06ca3c8bb06f7c/logs?stderr=1&stdout=1&timestamps=0&follow=1&tail=all HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/44f4f9110f5ca73759ac2539235ae5a34acfbb0ef6c51d309e06ca3c8bb06f7c/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/archive?path=%2Fworkspace%2Ftest%2Fdist%2F HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/44f4f9110f5ca73759ac2539235ae5a34acfbb0ef6c51d309e06ca3c8bb06f7c/wait HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "DELETE /v1.54/containers/44f4f9110f5ca73759ac2539235ae5a34acfbb0ef6c51d309e06ca3c8bb06f7c?v=False&link=False&force=True HTTP/1.1" 204 0
+DEBUG:asyncio:Using selector: EpollSelector
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/create?name=9726ee7c-bea9-44e8-a07f-a60bcf9379d0 HTTP/1.1" 201 144
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/753d17f0417f4eec1ebaa90799cf3b205bf0ddbe730c2e56448fbb1e8a02a349/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/753d17f0417f4eec1ebaa90799cf3b205bf0ddbe730c2e56448fbb1e8a02a349/start HTTP/1.1" 204 0
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/753d17f0417f4eec1ebaa90799cf3b205bf0ddbe730c2e56448fbb1e8a02a349/logs?stderr=1&stdout=1&timestamps=0&follow=1&tail=all HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/753d17f0417f4eec1ebaa90799cf3b205bf0ddbe730c2e56448fbb1e8a02a349/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/archive?path=%2Fworkspace%2Ftest%2Fdist%2F HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "GET /v1.54/containers/9726ee7c-bea9-44e8-a07f-a60bcf9379d0/json HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "POST /v1.54/containers/753d17f0417f4eec1ebaa90799cf3b205bf0ddbe730c2e56448fbb1e8a02a349/wait HTTP/1.1" 200 None
+DEBUG:urllib3.connectionpool:http://localhost:None "DELETE /v1.54/containers/753d17f0417f4eec1ebaa90799cf3b205bf0ddbe730c2e56448fbb1e8a02a349?v=False&link=False&force=True HTTP/1.1" 204 0
