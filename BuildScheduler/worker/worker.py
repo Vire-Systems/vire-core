@@ -5,42 +5,18 @@
 import asyncio, docker, redis, logging
 from cli_parser import load_parser
 import state
+from BuildScheduler.shared.scheduler_logger import vire_logger as cfn_log
 
 
 # Defined Variables -----------------------------------------------------------------------------------------
 client = docker.from_env()
 r = redis.Redis.from_url(state.redis_url)
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(filename=state.logfile_location, encoding='utf-8', level=logging.DEBUG)
-
-
 # Helper ---- Sends a report API request. ------ Called in the entry point. ---------------------------------
 def mark_unavailable(reason):
     """sends a 'crashed'/'failed' API request to Middleware/Core"""
     #TODO : Mark unavailable by sending an API req to a middleware  instance 
-    ...
-
-
-# Helper --- A custom logging function ------ Called throughout. --------------------------------------------
-def cfn_log(log_type: str, obj:str, *args)-> None: #cfn is a shorthand to 'custom function'
-    """log_type levels: [info | warn | error | critical | exit]"""
-    try:
-        l_type = log_type.lower()
-        if l_type == 'info':
-            logger.info(obj, *args)
-        elif l_type.lower() == 'warn':
-            logger.warning(obj, *args)
-        elif l_type == 'error':
-            logger.error(obj, *args,exc_info=True ,stack_info=True)
-        elif l_type == 'critical':
-            logger.critical(obj, *args, stack_info=True, exc_info=True)
-        elif l_type == 'exit':
-            logger.critical(obj, *args)
-        else:
-            logger.warning("[cfn_log] Log type '%s' is not supported by cfn_log.", l_type)
-    except Exception as e:
-        logger.error("[cfn_log] An error occoured in the logging function. (%s)", e, exc_info=True)
+    return
 
 
 # Helper --- Publishes a log line to subscriber(s). ------ Called by 'stream_logs' --------------------------
@@ -55,7 +31,7 @@ def publish_log_redis(line: str)-> None:
 def stream_logs(job_uuid: str)-> None:
     try:
         container = client.containers.get(job_uuid)
-        for line in container.logs(stream=True, follow=True, stdout=True, stderr=True):
+        for line in container.logs(stream=True, follow=True, stdout=True, stderr=True, timestamps=True):
             str_line = line.decode("utf-8")
             #publish_log_redis(str_line)
             print(str_line) # TODO: Remove this after redis layer is done.
@@ -115,8 +91,7 @@ async def main():
         if state.job_uuid:
             cfn_log("critical", "[main] worker unable to run for job '%s'. Marking as crashed. Details: %s", state.job_uuid, e)
         else:
-            cfn_log("critical", "[main] worker unable to run for job. [UUID unavailable]. Marking as crashed. Details: %s", state.job_uuid, e)
-        # TODO: Add a 'requests' api call to a middleware instance or to the core.
+            cfn_log("critical", "[main] worker unable to run for job. [UUID unavailable]. Marking as crashed. Details: %s", e)
 
 # Entry point ------- aka the 'Bootstrap block' -------------------------------------------------------------
 if __name__ == "__main__":
@@ -127,9 +102,9 @@ if __name__ == "__main__":
     finally:
         try:
             stream, stat = client.api.get_archive(state.job_uuid, "/workspace/test/dist/")
-            with open("/home/vire/Vire-Core/TST/test.tar", "wb") as tar_file:
+            with open("/home/vire/Vire-Core/test/test.tar", "wb") as tar_file: #TODO: Change paths in 128 and 129
                 for chunk in stream:
                     tar_file.write(chunk)
         except Exception as e:
-            mark_unavailable("idk")
+            mark_unavailable("idk") #TODO Change this
         remove_container(state.job_uuid)
