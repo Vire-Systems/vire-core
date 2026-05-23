@@ -1,5 +1,5 @@
 import logging
-from worker.state import logfile_location
+from BuildScheduler.Scheduler.utils.state import logfile_location
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.DEBUG)

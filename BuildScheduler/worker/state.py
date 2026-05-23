@@ -13,4 +13,5 @@ framework_images: dict = {
     "":"",
     "static":"",
 }
-logfile_location = os.path.abspath(os.path.join(os.path.dirname(__file__), "worker.log"))
+logfile_location = os.path.abspath(os.path.join("/home/vire/Vire-Core/worker.log")) #TODO: Change this
+CONTAINER_EXPIRY = 300

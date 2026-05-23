@@ -4,4 +4,6 @@ __pycache__
 .env
 .vscode/
 test
+test.py
 *.log
+stuff_to_do.txt

@@ -1,25 +1,45 @@
 # worker.py - The individual worker process. Spawns as a detached process.
 # This is main
 
-# Imports ---------------------------------------------------------------------------------------------------
-import asyncio, docker, redis, logging
+# Imports
+import asyncio, docker, redis, logging, time
 from cli_parser import load_parser
 import state
-from BuildScheduler.shared.scheduler_logger import vire_logger as cfn_log
 
-
-# Defined Variables -----------------------------------------------------------------------------------------
+# Defined Variables
 client = docker.from_env()
 r = redis.Redis.from_url(state.redis_url)
+logger = logging.getLogger(__name__)
+logging.basicConfig(filename=state.logfile_location, encoding='utf-8', level=logging.DEBUG)
 
-# Helper ---- Sends a report API request. ------ Called in the entry point. ---------------------------------
+# Helper called in the entry point.
 def mark_unavailable(reason):
     """sends a 'crashed'/'failed' API request to Middleware/Core"""
-    #TODO : Mark unavailable by sending an API req to a middleware  instance 
+    #TODO : Mark unavailable by sending an API req to a middleware instance 
     return
 
 
-# Helper --- Publishes a log line to subscriber(s). ------ Called by 'stream_logs' --------------------------
+def cfn_log(log_type: str, obj:str, *args)-> None: #cfn is a shorthand to 'custom function'
+    """log_type levels: [info | warn | error | critical | exit]"""
+    try:
+        l_type = log_type.lower()
+        if l_type == 'info':
+            logger.info(obj, *args)
+        elif l_type.lower() == 'warn':
+            logger.warning(obj, *args)
+        elif l_type == 'error':
+            logger.error(obj, *args,exc_info=True ,stack_info=True)
+        elif l_type == 'critical':
+            logger.critical(obj, *args, stack_info=True, exc_info=True)
+        elif l_type == 'exit':
+            logger.critical(obj, *args)
+        else:
+            logger.warning("[cfn_log] Log type '%s' is not supported by cfn_log.", l_type)
+    except Exception as e:
+        logger.error("[cfn_log] An error occoured in the logging function. (%s)", e, exc_info=True)
+
+
+# Helper called by 'stream_logs'
 def publish_log_redis(line: str)-> None:
     try:
         r.publish(f"logs:{state.job_uuid}", line)
@@ -27,7 +47,7 @@ def publish_log_redis(line: str)-> None:
         cfn_log("critical", "[publish_log_redis] Unable to publish logs. Details: %s", e)
 
 
-# Log streamer --- Streams log lines from the container and calls 'publish_log_redis'. ----------------------
+# Calls 'publish_log_redis'
 def stream_logs(job_uuid: str)-> None:
     try:
         container = client.containers.get(job_uuid)
@@ -38,37 +58,61 @@ def stream_logs(job_uuid: str)-> None:
     except Exception as e:
         cfn_log("critical", "[stream_logs] Error in stream_logs. Details: (%s)", e)
 
-# Container remover --- Removes containers based on their name. ---------------------------------------------
+
+
 def remove_container(job_uuid: str):
     """Name (UUID4 used for naming) based container remover"""
     try:
         container_obj = client.containers.get(job_uuid)
-        container_obj.wait()
-        container_obj.remove(force=True)
+    except docker.errors.NotFound:
+        return None
+    try:
+        if container_obj:
+            container_obj.wait()
+            container_obj.remove(force=True)
+    except docker.errors.APIError as e:
+        if "is already in progress" in e:
+            pass
+        else:
+            cfn_log("critical", "[remove_container]-> docker.errors.APIError: Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
     except Exception as e:
         cfn_log("critical", "[remove_container] Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
 
 
-# Helper --- Synchronous container engine ------ Called in 'container_create'. ------------------------------
+# Helper called by 'container_create'.
 def sync_docker_run(job_uuid: str):
     cmd_body = f"git clone {state.remote} && cd test && npm run build" #TODO swap test in 'cd test' with repo name and 'npm run build' with toml based check
+    test_command = (
+    'node -e "let i = 0; setInterval(() => { '
+    'const stages = [\'FETCH\', \'BUILD\', \'OPTIMIZE\', \'ASSET\', \'CACHE\']; '
+    'const stage = stages[Math.floor(Math.random() * stages.length)]; '
+    'const hash = Math.random().toString(16).substring(2, 8); '
+    'console.log(\'[\' + new Date().toISOString() + \'] [\' + stage + \'] Compiling chunk \' + hash + \' | Step \' + (++i) + \' | Memory RSS: \' + (process.memoryUsage().rss / 1024 / 1024).toFixed(2) + \' MB\'); '
+    '}, 200);"'
+    ) #TODO REMOVE THIS. test command to check the functionality of worker deadlock termination methods.
+    
     try:
+        exprires_at = int(time.time() + state.CONTAINER_EXPIRY)
         cmd = ["bash", "-c", cmd_body]     
         client.containers.run(
             name=job_uuid,
             image="vire_node-npm:v1",
-            command=cmd,
+            command=test_command,
             mem_limit='400m',
             cpu_quota=50000,   # These 2 are in μs (microseconds)
             cpu_period=100000,
-            detach=True
+            detach=True,
+            labels={
+                "managed_by":"build_scheduler",
+                "expires_at": str(exprires_at)
+            }
         )
     except Exception as e:
         cfn_log("critical", "[sync_docker_run] Job '%s' was unsuccessful. Details: %s", job_uuid, e )
         return {"container_run_error": "Container spin up unsucessful."}
 
 
-# Async container engine --- ... ----------------------------------------------------------------------------
+
 async def container_create(job_uuid: str):
     try:
         container_task = asyncio.to_thread(sync_docker_run, job_uuid)
@@ -78,7 +122,7 @@ async def container_create(job_uuid: str):
         cfn_log("critical", "[container_create] Container creation for job '%s' was unsucessful. Details: %s", job_uuid, e)
 
 
-# Main function --- Handles everything ----------------------------------------------------------------------
+
 async def main():
     try:
         load_parser()
