@@ -128,8 +128,8 @@ async def main():
         load_parser()
         if (state.job_uuid is None) or (state.remote is None):
             raise RuntimeError(f"Credential error. {'Remote' if state.remote else 'job_uuid'} cannot be 'None'.")
-        # add pm, framework test here
-        # add user_uuid test here
+        #TODO: add pm, framework test here
+        #TODO: add user_uuid test here
         await container_create(state.job_uuid)
     except Exception as e:
         if state.job_uuid:
