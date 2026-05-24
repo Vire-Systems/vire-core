@@ -1,11 +1,13 @@
-import logging
-from BuildScheduler.Scheduler.utils.state import logfile_location
+import logging, os
+from BuildScheduler.Scheduler.utils.state import logfile_dir
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.DEBUG)
+logfile_location = os.path.join(logfile_dir, "scheduler.log")
+
+logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.INFO)
 
 
-async def vire_logger(log_type: str, obj:str, *args)-> None: #cfn is a shorthand to 'custom function'
+async def vire_logger(log_type: str, obj:str, *args)-> None:
     """log_type levels: [info | warn | error | critical | exit]"""
     try:
         l_type = log_type.lower()

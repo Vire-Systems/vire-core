@@ -2,15 +2,21 @@
 # This is main
 
 # Imports
-import asyncio, docker, redis, logging, time
+import asyncio, docker, redis, logging, time, os
 from cli_parser import load_parser
 import state
 
 # Defined Variables
 client = docker.from_env()
 r = redis.Redis.from_url(state.redis_url)
+
 logger = logging.getLogger(__name__)
-logging.basicConfig(filename=state.logfile_location, encoding='utf-8', level=logging.DEBUG)
+
+# helper
+def setup_logfile_location(job_uuid):
+    worker_log_dir = os.path.join(state.logfile_dir, job_uuid)
+    os.makedirs(worker_log_dir)
+    return os.path.join(worker_log_dir,f"{job_uuid}.log")
 
 # Helper called in the entry point.
 def mark_unavailable(reason):
@@ -71,7 +77,8 @@ def remove_container(job_uuid: str):
             container_obj.wait()
             container_obj.remove(force=True)
     except docker.errors.APIError as e:
-        if "is already in progress" in e:
+        if "is already in progress" in str(e).lower():
+            cfn_log("info", "[remove_container] Conflict: GC's termination in progress")
             pass
         else:
             cfn_log("critical", "[remove_container]-> docker.errors.APIError: Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
@@ -125,7 +132,6 @@ async def container_create(job_uuid: str):
 
 async def main():
     try:
-        load_parser()
         if (state.job_uuid is None) or (state.remote is None):
             raise RuntimeError(f"Credential error. {'Remote' if state.remote else 'job_uuid'} cannot be 'None'.")
         #TODO: add pm, framework test here
@@ -140,6 +146,10 @@ async def main():
 # Entry point ------- aka the 'Bootstrap block' -------------------------------------------------------------
 if __name__ == "__main__":
     try:
+        load_parser()
+        logfile_location = setup_logfile_location(state.job_uuid)
+        logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.INFO)
+
         asyncio.run(main())
     except Exception as e:
         print(e)

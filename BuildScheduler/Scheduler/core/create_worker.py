@@ -2,7 +2,7 @@ import subprocess, json, asyncio
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from BuildScheduler.Scheduler.core.del_container import delayed_delete
 
-# Create a worker process -----------------------------------------------------------------------------------
+
 async def create_worker_process(job_uuid: str, remote: str):
     async def _wk_helper(job_uuid, remote):
         try:
@@ -23,4 +23,3 @@ async def create_worker_process(job_uuid: str, remote: str):
         except Exception as e:
             await vire_logger("critical", "[create_worker] Worker creation failed. Details: %s", e) 
     await _wk_helper(job_uuid, remote)
-    await asyncio.sleep(20)

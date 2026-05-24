@@ -30,10 +30,14 @@ async def delayed_delete_helper(job_uuid: str)-> None:
         container_obj: Container = await get_container_object(job_uuid, client)
         if container_obj:
             await asyncio.to_thread(container_obj.remove,force=True)
+            await vire_logger("info", "[Scheduler delayed_delete_helper] Container process '%s' has been auto deleted. Task exceeded 5m limit.", job_uuid)
             # TODO: Add a request to middleware. body = {"error":"Status: Build failed. Exit code 1. Reason: Task exceeded the 5 minute limit."}
     except APIError as e:
-        if "is already in progress" not in str(e).lower():
+        if "is already in progress" in str(e).lower():
+            await vire_logger("info", "[Scheduler delayed_delete_helper] Conflict: GC termination already in progress for process '%s'", job_uuid)
+        else:
             await vire_logger("critical", "[delayed_delete_helper]-> docker.errors.APIError: Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
+        pass
     except NotFound:
         pass
     except Exception as e:
