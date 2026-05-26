@@ -16,6 +16,7 @@ async def gc_core_loop():
             await vire_logger("critical", "[GC gc_core_loop] Unable to collect. Details: %s", e)
         await asyncio.sleep(30)
 
+                                                     
 if __name__ == "__main__":
     try:
         asyncio.run(gc_core_loop())
