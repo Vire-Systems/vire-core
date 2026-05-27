@@ -1,6 +1,17 @@
 # worker.py - The individual worker process. Spawns as a detached process.
 # This is main
 
+"""
+refactor:
+
+Add dynamic commands, check for packages, make sure to run npm ci --ignore-scripts.
+Add output_dir selection, cd based on repo name, etc
+
+Everything should be available via state.
+
+"""
+
+
 # Imports
 import asyncio, docker, redis, logging, time, os
 from cli_parser import load_parser
@@ -48,7 +59,7 @@ def cfn_log(log_type: str, obj:str, *args)-> None: #cfn is a shorthand to 'custo
 # Helper called by 'stream_logs'
 def publish_log_redis(line: str)-> None:
     try:
-        r.publish(f"logs:{state.job_uuid}", line)
+        r.publish(f"logs:{state.user_uuid}/{state.job_uuid}", line)
     except Exception as e:
         cfn_log("critical", "[publish_log_redis] Unable to publish logs. Details: %s", e)
 
@@ -112,7 +123,7 @@ def sync_docker_run(job_uuid: str):
             labels={
                 "managed_by":"build_scheduler",
                 "expires_at": str(exprires_at)
-            }
+            },
         )
     except Exception as e:
         cfn_log("critical", "[sync_docker_run] Job '%s' was unsuccessful. Details: %s", job_uuid, e )

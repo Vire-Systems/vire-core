@@ -3,8 +3,5 @@ __pycache__
 *.pyc
 .env
 .vscode/
-test
 test.py
-*.log
 stuff_to_do.txt
-logs/
