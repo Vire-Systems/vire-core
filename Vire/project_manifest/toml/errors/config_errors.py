@@ -3,3 +3,6 @@ class InvalidPackageJson(Exception):
 
 class InvalidVireToml(Exception):
     pass
+
+class PackageManagerException(Exception):
+    pass

@@ -1,5 +1,5 @@
 import argparse, json
-import state
+import utils.state as state
 
 def load_parser():
     parser = argparse.ArgumentParser(description = "An isolated,individual worker process handling builds.")

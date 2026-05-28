@@ -1,4 +1,4 @@
-import os
+import os, docker
 from pathlib import Path
 
 logfile_dir = os.path.abspath(os.path.join(Path.home(), "vire_logs", "core"))

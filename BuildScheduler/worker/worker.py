@@ -11,135 +11,23 @@ Everything should be available via state.
 
 """
 
-
 # Imports
-import asyncio, docker, redis, logging, time, os
+import asyncio, logging, os
 from cli_parser import load_parser
-import state
 
-# Defined Variables
-client = docker.from_env()
-r = redis.Redis.from_url(state.redis_url)
+from utils import state
+from utils.vire_logger import cfn_log
 
-logger = logging.getLogger(__name__)
+from core.create_container_job import container_create
+from core.cleanup_container import remove_container
+from core.mark_unavailable import mark_unavailable
 
-# helper
+client = state.client
+
 def setup_logfile_location(job_uuid):
     worker_log_dir = os.path.join(state.logfile_dir, job_uuid)
-    os.makedirs(worker_log_dir)
+    os.makedirs(worker_log_dir, exist_ok=True)
     return os.path.join(worker_log_dir,f"{job_uuid}.log")
-
-# Helper called in the entry point.
-def mark_unavailable(reason):
-    """sends a 'crashed'/'failed' API request to Middleware/Core"""
-    #TODO : Mark unavailable by sending an API req to a middleware instance 
-    return
-
-
-def cfn_log(log_type: str, obj:str, *args)-> None: #cfn is a shorthand to 'custom function'
-    """log_type levels: [info | warn | error | critical | exit]"""
-    try:
-        l_type = log_type.lower()
-        if l_type == 'info':
-            logger.info(obj, *args)
-        elif l_type.lower() == 'warn':
-            logger.warning(obj, *args)
-        elif l_type == 'error':
-            logger.error(obj, *args,exc_info=True ,stack_info=True)
-        elif l_type == 'critical':
-            logger.critical(obj, *args, stack_info=True, exc_info=True)
-        elif l_type == 'exit':
-            logger.critical(obj, *args)
-        else:
-            logger.warning("[cfn_log] Log type '%s' is not supported by cfn_log.", l_type)
-    except Exception as e:
-        logger.error("[cfn_log] An error occoured in the logging function. (%s)", e, exc_info=True)
-
-
-# Helper called by 'stream_logs'
-def publish_log_redis(line: str)-> None:
-    try:
-        r.publish(f"logs:{state.user_uuid}/{state.job_uuid}", line)
-    except Exception as e:
-        cfn_log("critical", "[publish_log_redis] Unable to publish logs. Details: %s", e)
-
-
-# Calls 'publish_log_redis'
-def stream_logs(job_uuid: str)-> None:
-    try:
-        container = client.containers.get(job_uuid)
-        for line in container.logs(stream=True, follow=True, stdout=True, stderr=True, timestamps=True):
-            str_line = line.decode("utf-8")
-            #publish_log_redis(str_line)
-            print(str_line) # TODO: Remove this after redis layer is done.
-    except Exception as e:
-        cfn_log("critical", "[stream_logs] Error in stream_logs. Details: (%s)", e)
-
-
-
-def remove_container(job_uuid: str):
-    """Name (UUID4 used for naming) based container remover"""
-    try:
-        container_obj = client.containers.get(job_uuid)
-    except docker.errors.NotFound:
-        return None
-    try:
-        if container_obj:
-            container_obj.wait()
-            container_obj.remove(force=True)
-    except docker.errors.APIError as e:
-        if "is already in progress" in str(e).lower():
-            cfn_log("info", "[remove_container] Conflict: GC's termination in progress")
-            pass
-        else:
-            cfn_log("critical", "[remove_container]-> docker.errors.APIError: Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
-    except Exception as e:
-        cfn_log("critical", "[remove_container] Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
-
-
-# Helper called by 'container_create'.
-def sync_docker_run(job_uuid: str):
-    cmd_body = f"git clone {state.remote} && cd test && npm run build" #TODO swap test in 'cd test' with repo name and 'npm run build' with toml based check
-    test_command = (
-    'node -e "let i = 0; setInterval(() => { '
-    'const stages = [\'FETCH\', \'BUILD\', \'OPTIMIZE\', \'ASSET\', \'CACHE\']; '
-    'const stage = stages[Math.floor(Math.random() * stages.length)]; '
-    'const hash = Math.random().toString(16).substring(2, 8); '
-    'console.log(\'[\' + new Date().toISOString() + \'] [\' + stage + \'] Compiling chunk \' + hash + \' | Step \' + (++i) + \' | Memory RSS: \' + (process.memoryUsage().rss / 1024 / 1024).toFixed(2) + \' MB\'); '
-    '}, 200);"'
-    ) #TODO REMOVE THIS. test command to check the functionality of worker deadlock termination methods.
-    
-    try:
-        exprires_at = int(time.time() + state.CONTAINER_EXPIRY)
-        cmd = ["bash", "-c", cmd_body]     
-        client.containers.run(
-            name=job_uuid,
-            image="vire_node-npm:v1",
-            command=test_command,
-            mem_limit='400m',
-            cpu_quota=50000,   # These 2 are in μs (microseconds)
-            cpu_period=100000,
-            detach=True,
-            labels={
-                "managed_by":"build_scheduler",
-                "expires_at": str(exprires_at)
-            },
-        )
-    except Exception as e:
-        cfn_log("critical", "[sync_docker_run] Job '%s' was unsuccessful. Details: %s", job_uuid, e )
-        return {"container_run_error": "Container spin up unsucessful."}
-
-
-
-async def container_create(job_uuid: str):
-    try:
-        container_task = asyncio.to_thread(sync_docker_run, job_uuid)
-        await container_task
-        await asyncio.to_thread(stream_logs,job_uuid)
-    except Exception as e:
-        cfn_log("critical", "[container_create] Container creation for job '%s' was unsucessful. Details: %s", job_uuid, e)
-
-
 
 async def main():
     try:
