@@ -1,20 +1,48 @@
 import time, asyncio
 
 from core.stream_redis_log import stream_logs, publish_log_redis
-from schema.errors import ContainerCreationFail
+from schema.errors import ContainerCreationFail, UnsupportedFramework
 
 from utils import state
 from utils.adapter import FRAMEWORK_REGISTRY
 from utils.vire_logger import cfn_log
 
 # Helper
-def setup_creation(repo_name, framework, package_manager)-> list[str]:
-    #TODO swap test in 'cd test' with repo name and 'npm run build' with toml based check
+def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple[str]:
+    """
+    Args
+
+    repo_name: Name of the repository.
+    framework: Name of the framework.
+    package_manager: Name of the package_manager
+
+    Returns
+
+    tuple : (image, cmd)
+
+    Raises worker.schema.errors.UnsupportedFramework if framework_registry.get returns None
+    """
     framework_adapter = FRAMEWORK_REGISTRY.get(framework)
-    
-    image = framework_adapter.image
-    output_dir = framework_adapter.output_dir
-    
+    if not framework_adapter:
+        raise UnsupportedFramework(f"{framework} is not supported.")
+    try:
+        image = framework_adapter.image
+
+        build_cmd: str = framework_adapter.build_command.get(package_manager)
+        clone = f"git clone {state.remote}",
+        cd = f"cd {repo_name}"
+
+        base = f"{clone} && {cd}"
+        if state.install_req:
+            install_cmd = framework_adapter.install_command.get(package_manager)
+            cmd = f"{base} && {install_cmd} && {build_cmd}"
+        elif not state.install_req:
+            cmd = f"{base} && {build_cmd}"
+
+        return image, cmd
+    except Exception as e:
+        cfn_log("critical", "[worker setup_creation] Unable to initialize setup.")
+        return None, None
 
 # Helper called by 'container_create'.
 def sync_docker_run(job_uuid: str)-> None:
@@ -39,23 +67,25 @@ def sync_docker_run(job_uuid: str)-> None:
     try:
         client = state.client
         exprires_at = int(time.time() + state.CONTAINER_EXPIRY)
-        cmd = ["bash", "-c", cmd_body]     
+        image, cmd = setup_creation(state.repo_name, state.framework, state.package_manager)
+
+        if not image or not cmd:
+            raise ContainerCreationFail(f"{"Image" if not image else "cmd"} Cannot be none.")
+
+        # TODO: Remove command=test_command later.
         client.containers.run(
-            name=job_uuid,
-            image="vire_node-npm:v1",
-            command=test_command,
-            mem_limit='400m',
-            cpu_quota=50000,   # These 2 are in μs (microseconds)
-            cpu_period=100000,
-            detach=True,
-            labels={
+            name = job_uuid,
+            image = image, command = test_command,
+            mem_limit = '400m', cpu_quota = 50000, cpu_period = 100000,
+            detach = True,
+            labels = {
                 "managed_by":"build_scheduler",
                 "expires_at": str(exprires_at)
             },
         )
     except Exception as e:
         cfn_log("critical", "[sync_docker_run] Job '%s' was unsuccessful. Details: %s", job_uuid, e )
-        raise ContainerCreationFail("Container spin up unsucessful.")
+        raise ContainerCreationFail(f"Container spin up unsucessful. Details: {e}")
 
 
 
