@@ -22,6 +22,8 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
 
     Raises worker.schema.errors.UnsupportedFramework if framework_registry.get returns None
     """
+
+    #TODO: Change the dict fetches to direct (dict_var[])
     framework_adapter = FRAMEWORK_REGISTRY.get(framework)
     if not framework_adapter:
         raise UnsupportedFramework(f"{framework} is not supported.")
@@ -29,7 +31,7 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
         image = framework_adapter.image
 
         build_cmd: str = framework_adapter.build_command.get(package_manager)
-        clone = f"git clone {state.remote}",
+        clone = f"git clone {state.remote}"
         cd = f"cd {repo_name}"
 
         base = f"{clone} && {cd}"
@@ -66,11 +68,11 @@ def sync_docker_run(job_uuid: str)-> None:
     
     try:
         client = state.client
-        exprires_at = int(time.time() + state.CONTAINER_EXPIRY)
+        expires_at = int(time.time() + state.CONTAINER_EXPIRY)
         image, cmd = setup_creation(state.repo_name, state.framework, state.package_manager)
 
         if not image or not cmd:
-            raise ContainerCreationFail(f"{"Image" if not image else "cmd"} Cannot be none.")
+            raise ContainerCreationFail(f"{'Image' if not image else 'cmd'} Cannot be none.")
 
         # TODO: Remove command=test_command later.
         client.containers.run(
@@ -80,7 +82,7 @@ def sync_docker_run(job_uuid: str)-> None:
             detach = True,
             labels = {
                 "managed_by":"build_scheduler",
-                "expires_at": str(exprires_at)
+                "expires_at": str(expires_at)
             },
         )
     except Exception as e:
