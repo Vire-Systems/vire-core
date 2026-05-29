@@ -3,3 +3,6 @@ class ContainerCreationFail(Exception):
 
 class UnsupportedFramework(Exception):
     pass
+
+class CredentialError(Exception):
+    pass

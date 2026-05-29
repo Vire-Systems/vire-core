@@ -19,4 +19,5 @@ def load_parser():
     state.framework = json_struct.get("framework")
     state.package_manager = json_struct.get("pm")
     state.repo_name = json_struct.get("repo_name")
+    state.user_uuid = json_struct.get("user_uuid")
     #TODO: Update the other ones when needed.

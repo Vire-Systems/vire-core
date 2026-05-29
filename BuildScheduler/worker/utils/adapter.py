@@ -6,11 +6,11 @@ from schema.worker_dataclasses import FrameworkAdapter
 
 #Vite
 vite = FrameworkAdapter(
-    image="vire_node-npm:v1",
-    output_dir="/dist",
+    image="vire-runner:node22",
+    output_dir="dist",
     install_command={
-        "npm":"npm ci --ignore-scripts --omit=optional",
-        "pnpm":"pnpm install --frozen-lockfile --ignore-scripts --no-optional"
+        "npm":"npm ci --ignore-scripts",
+        "pnpm":"pnpm install --frozen-lockfile --ignore-scripts"
     },
     build_command={
         "npm":"npm run build",

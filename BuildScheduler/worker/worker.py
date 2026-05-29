@@ -16,13 +16,14 @@ import asyncio, logging, os
 from cli_parser import load_parser
 
 from utils import state
-from schema.errors import ContainerCreationFail
+from schema.errors import ContainerCreationFail, CredentialError
 from utils.vire_logger import cfn_log
 from utils.adapter import FRAMEWORK_REGISTRY
 
 from core.create_container_job import container_create
 from core.cleanup_container import remove_container
 from core.mark_unavailable import mark_unavailable
+from core.stream_redis_log import publish_log_redis
 
 client = state.client
 
@@ -33,16 +34,25 @@ def setup_logfile_location(job_uuid):
 
 async def main():
     try:
-        if (state.job_uuid is None) or (state.remote is None):
-            raise RuntimeError(f"Credential error. {'Remote' if state.remote else 'job_uuid'} cannot be 'None'.")
-        #TODO: add pm, framework test here
-        #TODO: add user_uuid test here
+        if (state.job_uuid is None) or (state.user_uuid is None):
+            raise CredentialError(f"Credential error. {'job_uuid' if state.job_uuid else 'user_uuid'} cannot be 'None'.")
+        
+        if (state.framework is None) or (state.package_manager is None):
+            raise CredentialError(f"Credential error. {'framework' if state.framework else 'package_manager'} cannot be 'None'.")
+        
+        if (state.remote is None) or (state.repo_name is None):
+            raise CredentialError(f"Credential error. {'Remote' if state.remote else 'repo_name'} cannot be 'None'.")
+
         await container_create(state.job_uuid)
+    except CredentialError as e:
+        #publish_log_redis(str(e)) TODO: Remove this
+        print(e)
     except Exception as e:
         if state.job_uuid:
             cfn_log("critical", "[main] worker unable to run for job '%s'. Marking as crashed. Details: %s", state.job_uuid, e)
         else:
             cfn_log("critical", "[main] worker unable to run for job. [UUID unavailable]. Marking as crashed. Details: %s", e)
+
 
 # Entry point ------- aka the 'Bootstrap block' -------------------------------------------------------------
 if __name__ == "__main__":
@@ -56,11 +66,12 @@ if __name__ == "__main__":
         print(e)
     finally:
         try:
-            output_dir = FRAMEWORK_REGISTRY.get(state.framework).output_dir
-            if not output_dir:
+            framework_output_dir = FRAMEWORK_REGISTRY.get(state.framework).output_dir
+            if not framework_output_dir:
                 raise ContainerCreationFail("Output directory could not be resolved.")
-            stream, stat = client.api.get_archive(state.job_uuid, "/workspace/test/dist/")
-            with open("/home/vire/Vire-Core/test/test.tar", "wb") as tar_file: #TODO: Change paths in 128 and 129
+            output_dir = os.path.join("/workspace", state.repo_name, framework_output_dir)
+            stream, stat = client.api.get_archive(state.job_uuid, output_dir)
+            with open("/home/vire/Vire-Core/test/test.tar", "wb") as tar_file: #TODO: Change this path
                 for chunk in stream:
                     tar_file.write(chunk)
         except Exception as e:
