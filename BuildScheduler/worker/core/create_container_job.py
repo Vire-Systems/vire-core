@@ -37,11 +37,11 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
         base = f"{clone} && {cd}"
         if state.install_req:
             install_cmd = framework_adapter.install_command.get(package_manager)
-            cmd = f"{base} && {install_cmd} && {build_cmd}"
+            cmd_body = f"{base} && {install_cmd} && {build_cmd}"
         elif not state.install_req:
-            cmd = f"{base} && {build_cmd}"
+            cmd_body = f"{base} && {build_cmd}"
 
-        return image, cmd
+        return image, cmd_body
     except Exception as e:
         cfn_log("critical", "[worker setup_creation] Unable to initialize setup.")
         return None, None
@@ -57,27 +57,19 @@ def sync_docker_run(job_uuid: str)-> None:
     Raises 'worker.schema.errors.ContainerCreationFail' if container fails to spin up.
     """
 
-    test_command = (
-    'node -e "let i = 0; setInterval(() => { '
-    'const stages = [\'FETCH\', \'BUILD\', \'OPTIMIZE\', \'ASSET\', \'CACHE\']; '
-    'const stage = stages[Math.floor(Math.random() * stages.length)]; '
-    'const hash = Math.random().toString(16).substring(2, 8); '
-    'console.log(\'[\' + new Date().toISOString() + \'] [\' + stage + \'] Compiling chunk \' + hash + \' | Step \' + (++i) + \' | Memory RSS: \' + (process.memoryUsage().rss / 1024 / 1024).toFixed(2) + \' MB\'); '
-    '}, 200);"'
-    ) #TODO REMOVE THIS. test command to check the functionality of worker deadlock termination methods.
-    
     try:
         client = state.client
         expires_at = int(time.time() + state.CONTAINER_EXPIRY)
-        image, cmd = setup_creation(state.repo_name, state.framework, state.package_manager)
+        image, cmd_body = setup_creation(state.repo_name, state.framework, state.package_manager)
 
-        if not image or not cmd:
+        if not image or not cmd_body:
             raise ContainerCreationFail(f"{'Image' if not image else 'cmd'} Cannot be none.")
-
+        cmd = ["sh", "-c", cmd_body]
         # TODO: Remove command=test_command later.
+        print(cmd)
         client.containers.run(
             name = job_uuid,
-            image = image, command = test_command,
+            image = image, command = cmd,
             mem_limit = '400m', cpu_quota = 50000, cpu_period = 100000,
             detach = True,
             labels = {

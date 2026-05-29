@@ -16,7 +16,9 @@ import asyncio, logging, os
 from cli_parser import load_parser
 
 from utils import state
+from schema.errors import ContainerCreationFail
 from utils.vire_logger import cfn_log
+from utils.adapter import FRAMEWORK_REGISTRY
 
 from core.create_container_job import container_create
 from core.cleanup_container import remove_container
@@ -54,10 +56,17 @@ if __name__ == "__main__":
         print(e)
     finally:
         try:
+            output_dir = FRAMEWORK_REGISTRY.get(state.framework).output_dir
+            if not output_dir:
+                raise ContainerCreationFail("Output directory could not be resolved.")
             stream, stat = client.api.get_archive(state.job_uuid, "/workspace/test/dist/")
             with open("/home/vire/Vire-Core/test/test.tar", "wb") as tar_file: #TODO: Change paths in 128 and 129
                 for chunk in stream:
                     tar_file.write(chunk)
         except Exception as e:
             mark_unavailable("idk") #TODO Change this
-        remove_container(state.job_uuid)
+        job_uuid = state.job_uuid
+        try:
+            remove_container(job_uuid=job_uuid)
+        except Exception as e:
+            cfn_log("critical", "[worker entry_point] remove_container unable to remove the container. Details %s", e)

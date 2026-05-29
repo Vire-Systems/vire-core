@@ -9,8 +9,8 @@ vite = FrameworkAdapter(
     image="vire_node-npm:v1",
     output_dir="/dist",
     install_command={
-        "npm":"npm ci --ignore-scripts --omit=dev --omit=optional",
-        "pnpm":"pnpm install --frozen-lockfile --prod --ignore-scripts --no-optional"
+        "npm":"npm ci --ignore-scripts --omit=optional",
+        "pnpm":"pnpm install --frozen-lockfile --ignore-scripts --no-optional"
     },
     build_command={
         "npm":"npm run build",
