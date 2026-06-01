@@ -1,3 +1,10 @@
+"""
+This module (cleanup_container) handles container removal.
+
+Functions -
+1. remove_container (async)
+
+"""
 import docker
 from utils.state import client
 from utils.vire_logger import cfn_log
@@ -8,7 +15,7 @@ def remove_container(job_uuid: str):
     try:
         container_obj = client.containers.get(job_uuid)
     except docker.errors.NotFound:
-        return None
+        pass
     try:
         if container_obj:
             container_obj.wait()
@@ -16,9 +23,9 @@ def remove_container(job_uuid: str):
     except docker.errors.APIError as e:
         if "is already in progress" in str(e).lower():
             cfn_log("info", "[remove_container] Conflict: GC's termination in progress")
-            pass
         else:
-            cfn_log("critical", "[remove_container]-> docker.errors.APIError: Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
+            cfn_log("critical", "[remove_container]-> docker.errors.APIError: Removal of container '%s' was unsuccessful. Details: %s",
+                    job_uuid, e
+            )
     except Exception as e:
         cfn_log("critical", "[remove_container] Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
-

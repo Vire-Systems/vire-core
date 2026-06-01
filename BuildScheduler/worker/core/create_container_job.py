@@ -1,7 +1,16 @@
+"""
+This module (create_container_job) handles container creation.
+
+Functions -
+1. setup_creation (sync, helper)
+2. sync_docker_run (sync, helper)
+3. container_create (async, helper)
+"""
+
 import time, asyncio
 
 from core.stream_redis_log import stream_logs, publish_log_redis
-from schema.errors import ContainerCreationFail, UnsupportedFramework
+from schema.errors import ContainerCreationFail, UnsupportedFramework, InstallReqMismatch
 
 from utils import state
 from utils.adapter import FRAMEWORK_REGISTRY
@@ -23,27 +32,27 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
     Raises worker.schema.errors.UnsupportedFramework if framework_registry.get returns None
     """
 
-    #TODO: Change the dict fetches to direct (dict_var[])
-    framework_adapter = FRAMEWORK_REGISTRY.get(framework)
+    framework_adapter = FRAMEWORK_REGISTRY[framework]
     if not framework_adapter:
         raise UnsupportedFramework(f"{framework} is not supported.")
     try:
         image = framework_adapter.image
 
-        build_cmd: str = framework_adapter.build_command.get(package_manager)
+        build_cmd: str = framework_adapter.build_command[package_manager]
         clone = f"git clone {state.remote}"
         cd = f"cd {repo_name}"
 
         base = f"{clone} && {cd}"
         if state.install_req:
-            install_cmd = framework_adapter.install_command.get(package_manager)
+            install_cmd = framework_adapter.install_command[package_manager]
             cmd_body = f"{base} && {install_cmd} && {build_cmd}"
         elif not state.install_req:
             cmd_body = f"{base} && {build_cmd}"
-
+        else:
+            raise InstallReqMismatch("'install_req' can only be a bool.")
         return image, cmd_body
     except Exception as e:
-        cfn_log("critical", "[worker setup_creation] Unable to initialize setup.")
+        cfn_log("critical", "[worker setup_creation] Unable to initialize setup. Details: %s", e)
         return None, None
 
 # Helper called by 'container_create'.
@@ -65,7 +74,6 @@ def sync_docker_run(job_uuid: str)-> None:
         if not image or not cmd_body:
             raise ContainerCreationFail(f"{'Image' if not image else 'cmd'} Cannot be none.")
         cmd = ["sh", "-c", cmd_body]
-        # TODO: Remove command=test_command later.
         print(cmd)
         client.containers.run(
             name = job_uuid,
@@ -79,11 +87,16 @@ def sync_docker_run(job_uuid: str)-> None:
         )
     except Exception as e:
         cfn_log("critical", "[sync_docker_run] Job '%s' was unsuccessful. Details: %s", job_uuid, e )
-        raise ContainerCreationFail(f"Container spin up unsucessful. Details: {e}")
-
+        raise ContainerCreationFail(f"Container spin up unsucessful. Details: {e}") from e
 
 
 async def container_create(job_uuid: str)-> None:
+    """
+    Creates a container task and streams the container logs.
+    
+    Catches:
+        'ContainerCreationFail', 'Exception'.
+    """
     try:
         container_task = asyncio.to_thread(sync_docker_run, job_uuid)
         await container_task

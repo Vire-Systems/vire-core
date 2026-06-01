@@ -1,6 +1,14 @@
-#from Vire.utils.logger import vire_logger
+"""
+This module (schema_chech.py) checks the vire.toml schema.
+
+Functions -
+
+1. check_toml_schema
+"""
+
+from BuildScheduler.shared.scheduler_logger import vire_logger
 #from Vire.utils.pub_redis import publish_log_redis
-from Vire.project_manifest.toml.errors.config_errors import InvalidVireToml
+from BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors import InvalidVireToml
 
 async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str], bool]:
     """
@@ -17,21 +25,23 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str], bool]:
         if pkg install not needed:
         (framework, package_manager, framework_ver, output_dir), False
 
-    Raises 'Vire.project_manifest.toml.errors.config_errors.InvalidVireToml' if toml is malformed. raise returns a string with all missing toml_dict keys.
+    Raises "BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidVireToml" if toml is malformed.                         
+    Raise returns a string with all missing toml_dict keys.
+    Catches broad Exceptions.
     """
     try:
         output_str = ""
         details: dict = toml_dict.get("details")
         if not details:
             return "[details] table not found."
-        
+
         framework = details.get("framework")
         package_manager = details.get("package_manager")
 
         project: dict = toml_dict.get("project")
         if not project:
             return "[project] table not found"
-        
+
         output_dir = project.get("output_dir")
         framework_ver = project.get("framework_version")
         dependencies_req = project.get("dependencies")
@@ -48,11 +58,11 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str], bool]:
             output_str += "'dependencies' cannot be none"
 
         if output_str:
-            raise InvalidVireToml(output_str)    
+            raise InvalidVireToml(output_str)
         if dependencies_req == "present":
             return (framework, package_manager, framework_ver, output_dir), True
-        elif dependencies_req == "absent":
+        if dependencies_req == "absent":
             return (framework, package_manager, framework_ver, output_dir), False
     except Exception as e:
-        #await vire_logger("critical", "[Core check_toml_template] unable to parse toml. Details: %s. toml_dict: %s", e, toml_dict)
+        await vire_logger("critical", "[Core check_toml_template] unable to parse toml. Details: %s. toml_dict: %s", e, toml_dict)
         print(e)

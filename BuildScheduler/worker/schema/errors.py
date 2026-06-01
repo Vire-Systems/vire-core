@@ -1,8 +1,13 @@
+"""This module (errors) houses errors used by worker."""
+
 class ContainerCreationFail(Exception):
-    pass
+    """Exception for Container creation failure."""
 
 class UnsupportedFramework(Exception):
-    pass
+    """Exception used when encountering an unsupported framework."""
 
 class CredentialError(Exception):
-    pass
+    """Exception used for Credential errors by worker."""
+
+class InstallReqMismatch(Exception):
+    """Exception for the mismatch of 'install_req' flag."""

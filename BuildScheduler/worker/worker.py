@@ -18,7 +18,7 @@ from cli_parser import load_parser
 from utils import state
 from schema.errors import ContainerCreationFail, CredentialError
 from utils.vire_logger import cfn_log
-from utils.adapter import FRAMEWORK_REGISTRY
+from docker.errors import NotFound, APIError
 
 from core.create_container_job import container_create
 from core.cleanup_container import remove_container
@@ -28,18 +28,20 @@ from core.stream_redis_log import publish_log_redis
 client = state.client
 
 def setup_logfile_location(job_uuid):
+    """Sets up the logfile directory and locations."""
     worker_log_dir = os.path.join(state.logfile_dir, job_uuid)
     os.makedirs(worker_log_dir, exist_ok=True)
     return os.path.join(worker_log_dir,f"{job_uuid}.log")
 
 async def main():
+    """main. Handles everything."""
     try:
         if (state.job_uuid is None) or (state.user_uuid is None):
             raise CredentialError(f"Credential error. {'job_uuid' if state.job_uuid else 'user_uuid'} cannot be 'None'.")
-        
+
         if (state.framework is None) or (state.package_manager is None):
             raise CredentialError(f"Credential error. {'framework' if state.framework else 'package_manager'} cannot be 'None'.")
-        
+
         if (state.remote is None) or (state.repo_name is None):
             raise CredentialError(f"Credential error. {'Remote' if state.remote else 'repo_name'} cannot be 'None'.")
 
@@ -54,7 +56,7 @@ async def main():
             cfn_log("critical", "[main] worker unable to run for job. [UUID unavailable]. Marking as crashed. Details: %s", e)
 
 
-# Entry point ------- aka the 'Bootstrap block' -------------------------------------------------------------
+# Entry point
 if __name__ == "__main__":
     try:
         load_parser()
@@ -62,20 +64,29 @@ if __name__ == "__main__":
         logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.INFO)
 
         asyncio.run(main())
+    except KeyError:
+        #publish_log_redis("Credential error: Credentials provided were incorrect.")
+        #TODO: Remove the comment
+        print("Keyerror")
     except Exception as e:
         print(e)
     finally:
         try:
-            framework_output_dir = FRAMEWORK_REGISTRY.get(state.framework).output_dir
-            if not framework_output_dir:
+            output_dir = state.OUTPUT_DIR
+            if not output_dir:
                 raise ContainerCreationFail("Output directory could not be resolved.")
-            output_dir = os.path.join("/workspace", state.repo_name, framework_output_dir)
-            stream, stat = client.api.get_archive(state.job_uuid, output_dir)
+            output_dir = os.path.join("/workspace", state.repo_name, output_dir)
+            try:
+                stream, stat = client.api.get_archive(state.job_uuid, output_dir)
+            except NotFound:
+                #TODO publish_log_redis
+                exit(0)
             with open("/home/vire/Vire-Core/test/test.tar", "wb") as tar_file: #TODO: Change this path
                 for chunk in stream:
                     tar_file.write(chunk)
         except Exception as e:
             mark_unavailable("idk") #TODO Change this
+            cfn_log("critical", "smtn happened. %s", e)
         job_uuid = state.job_uuid
         try:
             remove_container(job_uuid=job_uuid)
