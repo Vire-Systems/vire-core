@@ -20,11 +20,12 @@ async def create_worker_process(json_struct: tuple)-> None:
         4. repo_name - string, Name of repository.
         5. framework - string, Name of the framework (ex: nextjs, vite, etc).
         6. pm - string, Name of the package manager (ex: npm, pnpm, etc).
-        7. install_req - str(lowercase "true" or "false"), Whether to run the package manager's install command or not.
-        8. output_dir - string, User provided output directory. 
+        7. install_req - bool, Whether to run the package manager's install command or not.
+        8. output_dir - string, User provided output directory.
+        9. commit_id - commit SHA or None
     """
     async def _wk_helper(json_struct)-> None:
-        job_uuid, user_uuid, remote, repo_name, framework, pm, install_req, output_dir = json_struct
+        job_uuid, user_uuid, remote, repo_name, framework, pm, install_req, output_dir, commit_id = json_struct
         try:
             cmd_b = {
                 "job_uuid": job_uuid,
@@ -34,7 +35,8 @@ async def create_worker_process(json_struct: tuple)-> None:
                 "framework": framework,
                 "pm": pm,
                 "install_req": install_req,
-                "output_dir":output_dir
+                "output_dir":output_dir,
+                "commit_id":commit_id
             }
             argument = json.dumps(cmd_b)
             cmd = [

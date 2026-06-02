@@ -1,11 +1,6 @@
-import logging, os
-from Vire.utils.state import logfile_dir
+import logging
 
-logger = logging.getLogger(__name__)
-logfile_location = os.path.join(logfile_dir, "scheduler.log")
-
-logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.INFO)
-
+logger = logging.getLogger()
 
 async def vire_logger(log_type: str, obj:str, *args)-> None:
     """log_type levels: [info | warn | error | critical | exit]"""

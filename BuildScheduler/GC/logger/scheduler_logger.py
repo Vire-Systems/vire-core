@@ -1,14 +1,13 @@
-import logging, asyncio, os
-from state import logfile_dir
+"""
+Basic Vire logging setup.
+"""
 
-logger = logging.getLogger(__name__)
-logfile_location = os.path.join(logfile_dir, "gc.log")
-logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.INFO)
-
+import logging
 
 def sync_vire_logger(log_type: str, obj:str, *args)-> None:
     """log_type levels: [info | warn | error | critical | exit]"""
     try:
+        logger = logging.getLogger()
         l_type = log_type.lower()
         if l_type == 'info':
             logger.info(obj, *args)
@@ -27,8 +26,14 @@ def sync_vire_logger(log_type: str, obj:str, *args)-> None:
 
 
 async def vire_logger(log_type: str, obj:str, *args)-> None:
-    """log_type levels: [info | warn | error | critical | exit]"""
+    """
+    log_type levels: [info | warn | error | critical | exit]
+    
+    This is an async function with a synchronous function. The func itself does not block due to QueueHandler logging setup.
+    check GC/logger/logger_setup.py for details.
+    """
     try:
-        await asyncio.to_thread(sync_vire_logger, log_type, obj, *args)
+        sync_vire_logger(log_type, obj, *args)
     except Exception as e:
+        logger = logging.getLogger()
         logger.error("[vire_logger] An error occoured in the async function wrapper. (%s)", e, exc_info=True)

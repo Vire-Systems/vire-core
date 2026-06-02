@@ -1,14 +1,15 @@
-import logging, os
-from BuildScheduler.Scheduler.utils.state import logfile_dir
+"""
+Basic logging setup for vire scheduler.
 
-logger = logging.getLogger(__name__)
-logfile_location = os.path.join(logfile_dir, "scheduler.log")
+Functions -
+    1. vire_logger
+"""
 
-logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.INFO)
-
+import logging
 
 async def vire_logger(log_type: str, obj:str, *args)-> None:
     """log_type levels: [info | warn | error | critical | exit]"""
+    logger = logging.getLogger()
     try:
         l_type = log_type.lower()
         if l_type == 'info':

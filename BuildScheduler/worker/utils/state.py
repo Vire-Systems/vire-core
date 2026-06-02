@@ -6,6 +6,8 @@ remote = None
 user_uuid = None
 
 install_req = False
+COMMIT_ID:str = None
+
 framework, package_manager = None, None
 repo_name = None
 OUTPUT_DIR = None

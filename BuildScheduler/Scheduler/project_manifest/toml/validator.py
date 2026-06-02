@@ -42,6 +42,7 @@ async def validate_package_json(package_json: dict)-> bool:
         found_keys = [key for key in blocked_keys if key in scripts]
 
         if found_keys:
+            print(found_keys)
             return False
         return True
     except Exception as e:
@@ -49,6 +50,7 @@ async def validate_package_json(package_json: dict)-> bool:
             "critical", "[Core validate_package_json] Unable to validate package.json. Details: %s. package.json : %s",
             e, package_json
         )
+        print(e)
         return False
 
 async def validate_toml(package_manager: str, package_json: dict, lockfile_name: str, output_dir: str)-> bool:

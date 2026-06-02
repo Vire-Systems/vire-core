@@ -39,10 +39,14 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
         image = framework_adapter.image
 
         build_cmd: str = framework_adapter.build_command[package_manager]
+        checkout = f"git checkout {state.COMMIT_ID}"
         clone = f"git clone {state.remote}"
-        cd = f"cd {repo_name}"
 
+        cd = f"cd {repo_name}"
         base = f"{clone} && {cd}"
+        if state.COMMIT_ID:
+            base = f"{base} && {checkout}"
+
         if state.install_req:
             install_cmd = framework_adapter.install_command[package_manager]
             cmd_body = f"{base} && {install_cmd} && {build_cmd}"
@@ -50,6 +54,7 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
             cmd_body = f"{base} && {build_cmd}"
         else:
             raise InstallReqMismatch("'install_req' can only be a bool.")
+
         return image, cmd_body
     except Exception as e:
         cfn_log("critical", "[worker setup_creation] Unable to initialize setup. Details: %s", e)

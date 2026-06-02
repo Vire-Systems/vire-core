@@ -28,6 +28,7 @@ def load_parser():
             "pm":"<package manager>",
             "output_dir":"<dir>"
             "install_req":"<Bool>",
+            "commit_id":"<sha256> or null"
         }'""")
     args = parser.parse_args()
     json_struct: dict = json.loads(args.json_struct)
@@ -41,3 +42,4 @@ def load_parser():
     state.package_manager = json_struct["pm"]
     state.install_req = json_struct["install_req"]
     state.OUTPUT_DIR = json_struct["output_dir"]
+    state.COMMIT_ID = json_struct["commit_id"]
