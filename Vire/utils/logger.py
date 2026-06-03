@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger()
 
 async def vire_logger(log_type: str, obj:str, *args)-> None:
-    """log_type levels: [info | warn | error | critical | exit]"""
+    """async, log_type levels: [info | warn | error | critical | exit]"""
     try:
         l_type = log_type.lower()
         if l_type == 'info':

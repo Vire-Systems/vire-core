@@ -43,7 +43,7 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str], bool]:
             return "[project] table not found"
 
         output_dir = project.get("output_dir")
-        framework_ver = project.get("framework_version")
+        framework_version = project.get("framework_version")
         dependencies_req = project.get("dependencies")
 
         if not framework:
@@ -52,17 +52,17 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str], bool]:
             output_str += "'package_manager' cannot be none. "
         if not output_dir:
             output_str += "output_dir cannot be none. "
-        if not framework_ver:
+        if not framework_version:
             output_str += "framework_version cannot be none. "
         if not dependencies_req:
             output_str += "'dependencies' cannot be none"
 
         if output_str:
             raise InvalidVireToml(output_str)
-        if dependencies_req == "present":
-            return (framework, package_manager, framework_ver, output_dir), True
-        if dependencies_req == "absent":
-            return (framework, package_manager, framework_ver, output_dir), False
+        if dependencies_req:
+            return (framework, package_manager, framework_version, output_dir), True
+        if not dependencies_req:
+            return (framework, package_manager, framework_version, output_dir), False
     except Exception as e:
         await vire_logger("critical", "[Core check_toml_template] unable to parse toml. Details: %s. toml_dict: %s", e, toml_dict)
         print(e)

@@ -53,23 +53,25 @@ async def validate_package_json(package_json: dict)-> bool:
         print(e)
         return False
 
-async def validate_toml(package_manager: str, package_json: dict, lockfile_name: str, output_dir: str)-> bool:
+async def validate_toml(package_manager: str, lockfile_name: str, output_dir: str)-> bool:
     """
-    Validates the vire.toml file using validate_package_json for validating package.json.
+    Validates the vire.toml file.
 
     Behavior:
         Returns False if "{"preinstall", "postinstall", "install", "prepare", "prepublish"}" is present in pacakge.json[scripts].
 
-    Raises -
-        'PackageManagerException' -
+    Raises
+        
+    'PackageManagerException' -
         1. if the given package_manager (arg) is invalid (unsupported).
         2. if lockfile given does not match the lockfile of the provided package manager.
 
-        'InvalidPackageJson'
+    'InvalidPackageJson'
         1. if package.json contains blocked methods (preinstall, postinstall, install, prepare, prepublish).
 
-        'InvalidOutDir' -
+    'InvalidOutDir' -
         1. If output_dir provided fails regex check (r[a-zA-Z0-9_]+).
+
     Error class locations -
 
     1. 'InvalidPackageJson' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidPackageJson
@@ -77,10 +79,6 @@ async def validate_toml(package_manager: str, package_json: dict, lockfile_name:
     3. 'InvalidOutDir' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidOutDir
     """
     #TODO: Fix the error messages
-
-    packagejson_valid = await validate_package_json(package_json)
-    if not packagejson_valid:
-        raise InvalidPackageJson("package.json contains blocked methods (preinstall, postinstall, install, prepare, prepublish)")
 
     if package_manager not in package_managers:
         raise PackageManagerException("Invalid Package manager")
