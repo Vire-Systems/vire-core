@@ -43,9 +43,8 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
         clone = f"git clone {state.remote}"
 
         cd = f"cd {repo_name}"
-        base = f"{clone} && {cd}"
-        if state.COMMIT_ID:
-            base = f"{base} && {checkout}"
+        clone_and_cd = f"{clone} && {cd}"
+        base = f"{clone_and_cd} && {checkout}"
 
         if state.install_req:
             install_cmd = framework_adapter.install_command[package_manager]

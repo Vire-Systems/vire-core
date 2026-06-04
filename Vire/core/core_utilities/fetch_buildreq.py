@@ -15,7 +15,7 @@ from Vire.utils.async_requests import send_request
 async def fetch_vire_toml(
         provider: str,
         remote_user: str, remote_reponame: str,
-        branch
+        branch : str
     )-> str:
     """
     Fetches vire.toml from 'master' on the provided provider's File content fetching APIs.
@@ -26,6 +26,11 @@ async def fetch_vire_toml(
         3. remote_reponame - The repository name (ex: vire in "https://github.com/Vire-Systems/vire/...")
         4. path - The path to the req file.
         5. branch - Latest branch which was pushed.
+    
+    Raises -
+        InvalidBranchError
+    Catches -
+        Broad 'Exception'
     """
     try:
         adapter = PROVIDER_REGISTRY[provider]
@@ -43,7 +48,7 @@ async def fetch_vire_toml(
 async def fetch_package_json(
         provider: str,
         remote_user: str, remote_reponame: str,
-        branch: str | None
+        branch: str
     )-> str:
     """
     Fetches package.json from the provided provider's File content fetching APIs.
@@ -53,14 +58,17 @@ async def fetch_package_json(
         2. remote_user - The username of the build requester. (ex: Vire-Systems in "https://github.com/Vire-Systems/...")
         3. remote_reponame - The repository name (ex: vire in "https://github.com/Vire-Systems/vire/...")
         4. path - The path to the req file.
-        5. branch - Latest branch which was pushed
+        5. branch - Latest branch which was pushed.
+
+    Raises -
+        InvalidBranchError if the branch is invalid.
     """
     adapter = PROVIDER_REGISTRY[provider]
     if not branch:
         raise InvalidBranchError(f"Provided branch ('{branch}')  is Invalid.")
 
     packagejson_raw_url = adapter.get_raw_url(user=remote_user, repo_name=remote_reponame, branch=branch, path_name="package.json")
-    body = requests.get(packagejson_raw_url, timeout=2)
+    body = await send_request(packagejson_raw_url)
     packagejson_bytes = body.content
     packagejson_str = packagejson_bytes.decode(encoding="utf-8")
 

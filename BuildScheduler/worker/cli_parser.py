@@ -34,12 +34,15 @@ def load_parser():
     json_struct: dict = json.loads(args.json_struct)
 
     # Variables updation.
-    state.job_uuid = json_struct["job_uuid"]
-    state.user_uuid = json_struct["user_uuid"]
-    state.remote = json_struct["remote"]
-    state.repo_name = json_struct["repo_name"]
-    state.framework = json_struct["framework"]
-    state.package_manager = json_struct["pm"]
-    state.install_req = json_struct["install_req"]
-    state.OUTPUT_DIR = json_struct["output_dir"]
-    state.COMMIT_ID = json_struct["commit_id"]
+    try:
+        state.job_uuid = json_struct["job_uuid"]
+        state.user_uuid = json_struct["user_uuid"]
+        state.remote = json_struct["remote"]
+        state.repo_name = json_struct["repo_name"]
+        state.framework = json_struct["framework"]
+        state.package_manager = json_struct["pm"]
+        state.install_req = json_struct["install_req"]
+        state.OUTPUT_DIR = json_struct["output_dir"]
+        state.COMMIT_ID = json_struct["commit_id"]
+    except KeyError as exc:
+        raise KeyError from exc
