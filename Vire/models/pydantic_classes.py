@@ -17,4 +17,3 @@ class BuildRequestModel(BaseModel):
     remote_user: str
     remote_reponame: str
     branch: str
-    lockfile_name: str

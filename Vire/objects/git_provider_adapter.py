@@ -24,6 +24,15 @@ class GitProviderAdapter:
         """Returns default fallback branch, ie; 'main'."""
         return 'main'
 
+    def return_list_tree(self, user: str, reponame: str, commit_id: str)-> str:
+        """
+        Returns the git tree contents (dir list) of the given commit id.
+        
+        1. user - username under git provider.
+        2. reponame - Name of the repo.
+        3. commit_id - SHA of the commit.
+        """
+        raise NotImplementedError
 # Adapters
 
 class GithubAdapter(GitProviderAdapter):
@@ -38,6 +47,11 @@ class GithubAdapter(GitProviderAdapter):
     def return_clone_link(self, user, repo_name):
         return(
             f"https://github.com/{user}/{repo_name}.git"
+        )
+
+    def return_list_tree(self, user, reponame, commit_id):
+        return(
+            f"https://api.github.com/repos/{user}/{reponame}/git/trees/{commit_id}"
         )
 
 PROVIDER_REGISTRY = {

@@ -10,20 +10,9 @@ Functions-
 from Vire.utils.logger import vire_logger
 from BuildScheduler.Scheduler.project_manifest.toml.errors import config_errors
 import re, json
-
+from BuildScheduler.shared.shared_state import package_managers, lockfile_matrix
 # frameworks vite, astro, vue, react, sveltekit, nextjs, nuxtjs, 11ty
 # pms: npm, pnpm, yarn, bun
-
-
-package_managers = ["npm", "pnpm", "yarn", "bun"]
-
-lockfile_matrix = {
-    "package-lock.json": "npm",
-    "pnpm-lock.yaml": "pnpm",
-    "yarn.lock": "yarn",
-    "bun.lock": "bun",
-    "bun.lockb": "bun"
-}
 
 # Helper, validates package.json. Called in 'validate.toml'
 async def validate_package_json(package_json_str: str)-> bool:

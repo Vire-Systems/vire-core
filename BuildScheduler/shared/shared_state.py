@@ -1,0 +1,13 @@
+"""Some shared state between validator and core."""
+
+package_managers = ["npm", "pnpm", "yarn", "bun"]
+
+lockfile_matrix = {
+    "package-lock.json": "npm",
+    "pnpm-lock.yaml": "pnpm",
+    "yarn.lock": "yarn",
+    "bun.lock": "bun",
+    "bun.lockb": "bun"
+}
+
+valid_lockfiles = ["pnpm-lock.yaml","yarn.lock","bun.lock", "bun.lockb","package-lock.json"]

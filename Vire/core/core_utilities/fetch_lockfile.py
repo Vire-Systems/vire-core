@@ -2,15 +2,15 @@
 This module (fetch_lockfile.py) is responsible for fetching the name of the lockfile present in the most recent commit.
 
 Functions -
-    1. 
+    1. fetch_lockfile_name 
 """
 
 #pylint: disable=pointless-string-statement
 """
 {
-  "sha": "273e6dce1d8f810e385cbfa5a7458f49301cc8e9",
-  "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/trees/273e6dce1d8f810e385cbfa5a7458f49301cc8e9",
-  "tree": [
+    "sha": "273e6dce1d8f810e385cbfa5a7458f49301cc8e9",
+    "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/trees/273e6dce1d8f810e385cbfa5a7458f49301cc8e9",
+    "tree": [
     {
       "path": "README.md",
       "mode": "100644",
@@ -71,3 +71,32 @@ Functions -
 }
 """
 #pylint: enable=pointless-string-statement
+import json
+from Vire.objects.git_provider_adapter import PROVIDER_REGISTRY
+from Vire.utils.async_requests import send_request
+from BuildScheduler.shared.shared_state import valid_lockfiles, lockfile_matrix
+from Vire.errors import errors
+
+
+async def fetch_lockfile_name(username: str, reponame: str, provider: str, commit_id: str, pm: str):
+    """Fetches all the available lockfiles in the provided commit of the provided repo."""
+    adapter = PROVIDER_REGISTRY[provider]
+
+    list_dir_url = adapter.return_list_tree(username, reponame, commit_id)
+
+    gittree_content_req = await send_request(list_dir_url)
+    #gittree_content = (gittree_content_req.content).decode()
+    trees = gittree_content_req.json()["tree"]
+
+    for node in trees:
+        path = node["path"]
+        if not path in valid_lockfiles:
+            continue
+
+        if node["size"] == 0:
+            raise errors.EmptyLockfile(f"Lockfile found ({path}) but it is empty.")
+
+        if lockfile_matrix.get(path) != pm:
+            continue
+
+        return path

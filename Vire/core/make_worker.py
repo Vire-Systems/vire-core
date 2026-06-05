@@ -11,13 +11,12 @@ from BuildScheduler.Scheduler.project_manifest.toml.parse_toml import parse_toml
 from BuildScheduler.Scheduler.project_manifest.toml.validator import validate_package_json, validate_toml
 from BuildScheduler.Scheduler.project_manifest.toml.errors import config_errors
 from Vire.utils.pub_redis import publish_log_redis
+from Vire.core.core_utilities.fetch_lockfile import fetch_lockfile_name
 
 
 async def scheduler_create_worker(
         job_uuid: str, user_uuid: str, remote_link: str, commit_id: str,
         provider: str, remote_user: str, remote_reponame: str, branch: str,
-        lockfile_name: str,
-
     ):
     """
     The abstracted function for creating a worker.
@@ -35,13 +34,17 @@ async def scheduler_create_worker(
     Errors raised by the functions used.
     """
     try:
+
         vire_toml_str = await fetch_vire_toml(
             provider=provider, remote_user=remote_user, remote_reponame=remote_reponame, branch=branch
         )
         toml_data, install_req = await parse_toml(vire_toml_str)
         framework, pm, _, output_dir = toml_data
-        valid_toml = await validate_toml(lockfile_name=lockfile_name, package_manager=pm, output_dir=output_dir)
+        lockfile_name = await fetch_lockfile_name(
+            username=remote_user, reponame=remote_reponame, provider=provider, commit_id=commit_id, pm=pm
+        )
 
+        valid_toml = await validate_toml(lockfile_name=lockfile_name, package_manager=pm, output_dir=output_dir)
         if not valid_toml:
             publish_log_redis("Invalid vire.toml.", user_uuid, job_uuid)
             return
@@ -61,15 +64,8 @@ async def scheduler_create_worker(
             return
 
         json_struct: tuple = (
-            job_uuid,
-            user_uuid,
-            remote_link,
-            remote_reponame,
-            framework,
-            pm,
-            install_req,
-            output_dir,
-            commit_id
+            job_uuid, user_uuid, remote_link, remote_reponame,
+            framework, pm, install_req, output_dir, commit_id
         )
 
         await create_worker_process(json_struct)
