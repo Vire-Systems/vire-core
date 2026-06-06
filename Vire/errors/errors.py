@@ -13,3 +13,9 @@ class UnsupportedPackageManager(Exception):
 
 class EmptyLockfile(Exception):
     """Raise when lockfile is empty."""
+
+class NoLockfile(Exception):
+    """Raise when unable to find a lockfile."""
+
+class UnsupportedGitProvider(Exception):
+    """Raise when the git provider isn't supported."""

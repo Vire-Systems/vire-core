@@ -33,4 +33,4 @@ async def parse_toml(toml_string: str)-> tuple[tuple[str,str,str,str], bool]:
         toml_dict = tomllib.loads(toml_string)
         return await check_toml_schema(toml_dict)
     except InvalidVireToml as e:
-        raise InvalidVireToml(e) from e
+        raise e

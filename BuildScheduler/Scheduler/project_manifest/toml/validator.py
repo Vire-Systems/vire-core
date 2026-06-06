@@ -48,7 +48,7 @@ async def validate_package_json(package_json_str: str)-> bool:
         )
         return False
 
-async def validate_toml(lockfile_name: str, package_manager: str, output_dir: str)-> bool:
+async def validate_toml(lockfile_name: str | None, package_manager: str, output_dir: str)-> bool:
     """
     Validates the vire.toml file.
 
@@ -61,24 +61,25 @@ async def validate_toml(lockfile_name: str, package_manager: str, output_dir: st
         1. if the given package_manager (arg) is invalid (unsupported).
         2. if lockfile given does not match the lockfile of the provided package manager.
 
-    'InvalidPackageJson'
-        1. if package.json contains blocked methods (preinstall, postinstall, install, prepare, prepublish).
-
     'InvalidOutDir' -
         1. If output_dir provided fails regex check (r[a-zA-Z0-9_]+).
 
     Error class locations -
 
-    1. 'InvalidPackageJson' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidPackageJson
-    2. 'PackageManagerException' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.PackageManagerException
-    3. 'InvalidOutDir' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidOutDir
+    1. 'PackageManagerException' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.PackageManagerException
+    2. 'InvalidOutDir' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidOutDir
     """
     #TODO: Fix the error messages
     if package_manager not in package_managers:
-        raise config_errors.PackageManagerException("Invalid Package manager")
+        raise config_errors.PackageManagerException(f"The package manager provided ({package_manager}) isn't supported by Vire yet.")
 
-    if lockfile_matrix.get(lockfile_name) != package_manager:
-        raise config_errors.PackageManagerException("Invalid lockfile")
+    if lockfile_name:
+        if lockfile_matrix.get(lockfile_name) != package_manager:
+            # pylint: disable=line-too-long
+            raise config_errors.PackageManagerException(
+                f"The lockfile ('{lockfile_name}') fetched by Vire does not match the Lockfile associated with the package manager ('{package_manager}') provided in your vire.toml."
+            )
+            #pylint: enable=line-too-long
 
     allowed = re.fullmatch(r"[a-zA-Z0-9_]+", output_dir)
     if not allowed:

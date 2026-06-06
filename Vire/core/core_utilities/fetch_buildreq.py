@@ -35,7 +35,7 @@ async def fetch_vire_toml(
     try:
         adapter = PROVIDER_REGISTRY[provider]
         if not branch:
-            raise InvalidBranchError(f"Provided branch ('{branch}') is invalid.")
+            raise InvalidBranchError
 
         toml_raw_url = adapter.get_raw_url(remote_user, remote_reponame, branch, "vire.toml")
         body = await send_request(toml_raw_url)

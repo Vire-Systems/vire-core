@@ -1,0 +1,63 @@
+Example git tree.
+{
+    "sha": "273e6dce1d8f810e385cbfa5a7458f49301cc8e9",
+    "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/trees/273e6dce1d8f810e385cbfa5a7458f49301cc8e9",
+    "tree": [
+        {
+            "path": "README.md",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "6fad91f86277fc53ec6d74637bb1d78a803c2d6a",
+            "size": 1571,
+            "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/6fad91f86277fc53ec6d74637bb1d78a803c2d6a"
+        },
+        {
+            "path": "package-lock.json",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "0116d6ca1743b57d944197e773290ea8143f9d74",
+            "size": 29370,
+            "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/0116d6ca1743b57d944197e773290ea8143f9d74"
+        },
+        {
+            "path": "package.json",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "d9855785dba5a77a3accb04ea16ea79c455a2fdd",
+            "size": 324,
+            "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/d9855785dba5a77a3accb04ea16ea79c455a2fdd"
+        },
+        {
+            "path": "src",
+            "mode": "040000",
+            "type": "tree",
+            "sha": "8232b86a79eae67b3c04a7b3140e946cff1bddf0",
+            "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/trees/8232b86a79eae67b3c04a7b3140e946cff1bddf0"
+        },
+        {
+            "path": "vire.toml",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "64428b253e531fe3a64479a9b9ef07ed09e16be2",
+            "size": 371,
+            "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/64428b253e531fe3a64479a9b9ef07ed09e16be2"
+        },
+        {
+            "path": "vireconfig.toml",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "037c61825fa1bf9cfd870fbe0d7dff4bc618700a",
+            "size": 242,
+            "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/037c61825fa1bf9cfd870fbe0d7dff4bc618700a"
+        },
+        {
+            "path": "vite.config.js",
+            "mode": "100644",
+            "type": "blob",
+            "sha": "001a0162fb496243d60ae5a1110811bf2e63d861",
+            "size": 431,
+            "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/001a0162fb496243d60ae5a1110811bf2e63d861"
+        }
+    ],
+    "truncated": false
+}

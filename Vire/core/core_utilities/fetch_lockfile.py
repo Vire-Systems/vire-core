@@ -5,73 +5,6 @@ Functions -
     1. fetch_lockfile_name 
 """
 
-#pylint: disable=pointless-string-statement
-"""
-{
-    "sha": "273e6dce1d8f810e385cbfa5a7458f49301cc8e9",
-    "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/trees/273e6dce1d8f810e385cbfa5a7458f49301cc8e9",
-    "tree": [
-    {
-      "path": "README.md",
-      "mode": "100644",
-      "type": "blob",
-      "sha": "6fad91f86277fc53ec6d74637bb1d78a803c2d6a",
-      "size": 1571,
-      "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/6fad91f86277fc53ec6d74637bb1d78a803c2d6a"
-    },
-    {
-      "path": "package-lock.json",
-      "mode": "100644",
-      "type": "blob",
-      "sha": "0116d6ca1743b57d944197e773290ea8143f9d74",
-      "size": 29370,
-      "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/0116d6ca1743b57d944197e773290ea8143f9d74"
-    },
-    {
-      "path": "package.json",
-      "mode": "100644",
-      "type": "blob",
-      "sha": "d9855785dba5a77a3accb04ea16ea79c455a2fdd",
-      "size": 324,
-      "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/d9855785dba5a77a3accb04ea16ea79c455a2fdd"
-    },
-    {
-      "path": "src",
-      "mode": "040000",
-      "type": "tree",
-      "sha": "8232b86a79eae67b3c04a7b3140e946cff1bddf0",
-      "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/trees/8232b86a79eae67b3c04a7b3140e946cff1bddf0"
-    },
-    {
-      "path": "vire.toml",
-      "mode": "100644",
-      "type": "blob",
-      "sha": "64428b253e531fe3a64479a9b9ef07ed09e16be2",
-      "size": 371,
-      "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/64428b253e531fe3a64479a9b9ef07ed09e16be2"
-    },
-    {
-      "path": "vireconfig.toml",
-      "mode": "100644",
-      "type": "blob",
-      "sha": "037c61825fa1bf9cfd870fbe0d7dff4bc618700a",
-      "size": 242,
-      "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/037c61825fa1bf9cfd870fbe0d7dff4bc618700a"
-    },
-    {
-      "path": "vite.config.js",
-      "mode": "100644",
-      "type": "blob",
-      "sha": "001a0162fb496243d60ae5a1110811bf2e63d861",
-      "size": 431,
-      "url": "https://api.github.com/repos/Poojit-Matukumalli/test/git/blobs/001a0162fb496243d60ae5a1110811bf2e63d861"
-    }
-  ],
-  "truncated": false
-}
-"""
-#pylint: enable=pointless-string-statement
-import json
 from Vire.objects.git_provider_adapter import PROVIDER_REGISTRY
 from Vire.utils.async_requests import send_request
 from BuildScheduler.shared.shared_state import valid_lockfiles, lockfile_matrix
@@ -79,13 +12,27 @@ from Vire.errors import errors
 
 
 async def fetch_lockfile_name(username: str, reponame: str, provider: str, commit_id: str, pm: str):
-    """Fetches all the available lockfiles in the provided commit of the provided repo."""
-    adapter = PROVIDER_REGISTRY[provider]
+    """
+    Fetches all the available lockfiles in the provided commit of the provided repo.
+    
+    Returns the name of the lockfile.
+
+    Behavior -
+        1. Fetches the git trees using an adapter (check Vire/objects/git_provider_adapter).
+
+    Raises -
+        1. EmptyLockfile
+        2. Keyerror (rare but possible if git_tree_node["path"] or git_tree_req.json()["trees"] does not exist.)
+        3. NoLockfile
+    """
+    try:
+        adapter = PROVIDER_REGISTRY[provider]
+    except KeyError as key_error:
+        raise errors.UnsupportedGitProvider(f"The framework provided ('{provider}') is not supported.") from key_error
 
     list_dir_url = adapter.return_list_tree(username, reponame, commit_id)
 
     gittree_content_req = await send_request(list_dir_url)
-    #gittree_content = (gittree_content_req.content).decode()
     trees = gittree_content_req.json()["tree"]
 
     for node in trees:
@@ -93,10 +40,14 @@ async def fetch_lockfile_name(username: str, reponame: str, provider: str, commi
         if not path in valid_lockfiles:
             continue
 
-        if node["size"] == 0:
-            raise errors.EmptyLockfile(f"Lockfile found ({path}) but it is empty.")
-
         if lockfile_matrix.get(path) != pm:
             continue
 
+        if node["size"] == 0:
+            raise errors.EmptyLockfile(path)
+
+        if node[type] != "blob":
+            continue
         return path
+
+    raise errors.NoLockfile()

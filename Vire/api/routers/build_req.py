@@ -1,3 +1,10 @@
+"""
+This module (build_req) contains the router for handling the build requests.
+
+Functions -
+    process_build_req (async, fastapi router)
+"""
+
 from fastapi import APIRouter
 import traceback
 from Vire.models.pydantic_classes import BuildRequestModel
