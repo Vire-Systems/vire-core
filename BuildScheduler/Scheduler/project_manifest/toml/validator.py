@@ -3,7 +3,7 @@ This module (validator) Validates the package.json.
 
 Functions-
 
-1. validate_pakage_json (async, helper)
+1. validate_pakage_json (async)
 2. validate_toml (async)
 """
 
@@ -14,7 +14,6 @@ from BuildScheduler.shared.shared_state import package_managers, lockfile_matrix
 # frameworks vite, astro, vue, react, sveltekit, nextjs, nuxtjs, 11ty
 # pms: npm, pnpm, yarn, bun
 
-# Helper, validates package.json. Called in 'validate.toml'
 async def validate_package_json(package_json_str: str)-> bool:
     """
     Validates package.json and returns bool (True/False). Is a Helper called by 'validate_toml'.
@@ -69,7 +68,6 @@ async def validate_toml(lockfile_name: str | None, package_manager: str, output_
     1. 'PackageManagerException' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.PackageManagerException
     2. 'InvalidOutDir' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidOutDir
     """
-    #TODO: Fix the error messages
     if package_manager not in package_managers:
         raise config_errors.PackageManagerException(f"The package manager provided ({package_manager}) isn't supported by Vire yet.")
 
