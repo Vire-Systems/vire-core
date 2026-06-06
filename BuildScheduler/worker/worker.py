@@ -47,7 +47,7 @@ async def main():
 
         await container_create(state.job_uuid)
     except CredentialError as e:
-        #publish_log_redis(str(e)) TODO: Remove this
+        publish_log_redis(str(e))
         print(e)
     except Exception as e:
         if state.job_uuid:
@@ -65,8 +65,7 @@ if __name__ == "__main__":
 
         asyncio.run(main())
     except KeyError:
-        #publish_log_redis("Credential error: Credentials provided were incorrect.")
-        #TODO: Remove the comment
+        publish_log_redis("Credential error: Credentials provided were incorrect.")
         print("Keyerror")
     except Exception as e:
         print(e)
@@ -76,11 +75,14 @@ if __name__ == "__main__":
             if not output_dir:
                 raise ContainerCreationFail("Output directory could not be resolved.")
             output_dir = os.path.join("/workspace", state.repo_name, output_dir)
+            print(output_dir)
             try:
                 stream, stat = client.api.get_archive(state.job_uuid, output_dir)
             except NotFound:
-                #TODO publish_log_redis
-                exit(0)
+                print(output_dir)
+                cfn_log("critical", "Toml path not found.")
+                publish_log_redis("Given path in toml not found.") # TODO: Add better error
+                exit(1)
             with open("/home/vire/Vire-Core/test/test.tar", "wb") as tar_file: #TODO: Change this path
                 for chunk in stream:
                     tar_file.write(chunk)

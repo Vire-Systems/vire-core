@@ -46,7 +46,7 @@ async def fetch_lockfile_name(username: str, reponame: str, provider: str, commi
         if node["size"] == 0:
             raise errors.EmptyLockfile(path)
 
-        if node[type] != "blob":
+        if node["type"] != "blob":
             continue
         return path
 

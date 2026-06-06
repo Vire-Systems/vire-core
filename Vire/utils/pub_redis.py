@@ -15,4 +15,4 @@ async def publish_log_redis(line: str, user_uuid: str ,job_uuid: str)-> None:
     except Exception as e:
         vire_logger("critical", "[Core publish_log_redis] Unable to publish logs. Details: %s", e)
     finally:
-        client.aclose()
+        await client.aclose()

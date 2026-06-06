@@ -94,7 +94,7 @@ async def scheduler_create_worker(
 
         except KeyError:
             await publish_log_redis(
-                line=f"{ts()} : Vire tried to fetch the contents of {common_line} using {provider}'s git tree API but is unable to fetch the 'trees' and 'tree_node[path]' of the json.'",
+                line=f"{ts()} : Vire tried to fetch the contents from {common_line} using {provider}'s git tree API but is unable to fetch the 'trees' and 'tree_node[path]' of the json.'",
                 user_uuid=user_uuid, job_uuid=job_uuid
             ) ; return
 
@@ -158,5 +158,5 @@ async def scheduler_create_worker(
 
         await create_worker_process(json_struct)
     except Exception as e:
-        print(e)
+        print(e) #TODO: Change this to handle it and log it.
     #pylint: enable=line-too-long

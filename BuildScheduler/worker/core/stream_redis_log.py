@@ -20,9 +20,7 @@ def stream_logs(job_uuid: str)-> None:
         container = client.containers.get(job_uuid)
         for line in container.logs(stream=True, follow=True, stdout=True, stderr=True, timestamps=True):
             str_line = line.decode("utf-8")
-            #publish_log_redis(str_line)
-            cfn_log("info", str_line) # TODO: Remove this after redis layer is done.
+            if len(str_line) >= 32:
+                publish_log_redis(str_line)
     except Exception as e:
         cfn_log("critical", "[stream_logs] Error in stream_logs. Details: (%s)", e)
-
-
