@@ -2,22 +2,24 @@
 This module (models) is responsible foe providing the db schemas and the init function.
 
 DB Schema classes -
-    1. 
+    1.
 
 Functions -
     1. init (async)
 """
 
-from Vire.db.db import engine, Base
+from sqlalchemy import TIMESTAMP, String, func
+from sqlalchemy.orm import Mapped, mapped_column
+
+from Vire.db.db import Base, engine
 from Vire.utils.logger import vire_logger
-from sqlalchemy import Column, String
 
 
 class BuildData(Base):
     """
     The DB schema class for Build request related data.
-    
-    Attributes - 
+
+    Attributes -
         job_uuid: String,
         user_uuid: str,
         remote_link: str,
@@ -27,16 +29,33 @@ class BuildData(Base):
         remote_reponame: str,
         branch: str
     """
-    __tablename__ = "BuildData"
-    job_uuid = Column(String, nullable=False, primary_key=True)
-    user_uuid = Column(String, nullable=False)
-    remote_link = Column(String, nullable=False)
-    commit_id = Column(String, nullable=False)
-    provider = Column(String, nullable=False)
-    remote_user = Column(String, nullable=False)
-    remote_reponame = Column(String, nullable=False)
-    branch = Column(String, nullable=False)
 
+    __tablename__ = "BuildData"
+    job_uuid: Mapped[str] = mapped_column(String, nullable=False, primary_key=True)
+    user_uuid: Mapped[str] = mapped_column(String, nullable=False)
+    remote_link: Mapped[str] = mapped_column(String, nullable=False)
+    commit_id: Mapped[str] = mapped_column(String, nullable=False)
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    remote_user: Mapped[str] = mapped_column(String, nullable=False)
+    remote_reponame: Mapped[str] = mapped_column(String, nullable=False)
+    branch: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class BuildState(Base):
+    """
+    Table for build states.
+
+    This SQLAlchemy schema handles build states.
+    Only running / queued builds should be present here.
+    """
+
+    __tablename__ = "BuildState"
+    job_uuid: Mapped[str] = mapped_column(String, nullable=False, primary_key=True)
+    user_uuid: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
+    finished_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP)
+    error: Mapped[str] = mapped_column(String)
 
 
 async def init_db():
