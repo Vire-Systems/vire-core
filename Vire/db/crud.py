@@ -37,8 +37,7 @@ async def register_build_state(
             new_build_state = BuildState(job_uuid=job_uuid, user_uuid = user_uuid, status=status)
             session.add(new_build_state)
 
-# job_uuid: str, user_uuid: str, remote_link: str, commit_id: str,
-#provider: str, remote_user: str, remote_reponame: str, branch: str,
+
 async def fetch_build_data(job_uuid: str)-> tuple[str, ...] | None:
     """
     Fetches full details of a build based on job_uuid.

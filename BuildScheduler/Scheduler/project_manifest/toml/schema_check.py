@@ -9,7 +9,7 @@ Functions -
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors import InvalidVireToml
 
-async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str], bool]:
+async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str, ...], bool]:
     """
     Validates the schema of the toml file. Also returns whether package install is required.
     
@@ -30,16 +30,16 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str], bool]:
     """
     try:
         output_str = ""
-        details: dict = toml_dict.get("details")
+        details: dict[str, str]|None = toml_dict.get("details")
         if not details:
-            return "[details] table not found."
+            raise InvalidVireToml("[details] table not found.")
 
         framework = details.get("framework")
         package_manager = details.get("package_manager")
 
-        project: dict = toml_dict.get("project")
+        project: dict[str,str]|None = toml_dict.get("project")
         if not project:
-            return "[project] table not found"
+            raise InvalidVireToml("[project] table not found")
 
         output_dir = project.get("output_dir")
         framework_version = project.get("framework_version")
@@ -60,8 +60,12 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str], bool]:
             raise InvalidVireToml(output_str)
         if dependencies_req:
             return (framework, package_manager, framework_version, output_dir), True
-        if not dependencies_req:
+        elif not dependencies_req:
             return (framework, package_manager, framework_version, output_dir), False
+        else:
+            raise InvalidVireToml(f"'dependencies_req' under the table [projects] can only be bool. Not {dependencies_req}")
     except Exception as e:
         await vire_logger("critical", "[Core check_toml_template] unable to parse toml. Details: %s. toml_dict: %s", e, toml_dict)
-        print(e)
+        raise InvalidVireToml(
+            "Unexpected errors occoured during parsing vire.toml. It appears to be misconfigured. See the docs for more information."
+        )

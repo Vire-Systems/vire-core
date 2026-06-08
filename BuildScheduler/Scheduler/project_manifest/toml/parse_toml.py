@@ -9,7 +9,7 @@ import tomllib
 from BuildScheduler.Scheduler.project_manifest.toml.schema_check import check_toml_schema
 from BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors import InvalidVireToml
 
-async def parse_toml(toml_string: str)-> tuple[tuple[str,str,str,str], bool]:
+async def parse_toml(toml_string: str)-> tuple[tuple[str, ...], bool]:
     """
     Parses vire.toml from toml string.
     
@@ -17,6 +17,7 @@ async def parse_toml(toml_string: str)-> tuple[tuple[str,str,str,str], bool]:
         toml_string - string returned from reading the repo's vire.toml.
 
     Returns:
+        tup[tup[8 strings ]]
         if pkg install needed:
         (framework, package_manager, framework_ver, output_dir), True
 
