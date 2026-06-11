@@ -17,7 +17,7 @@ from utils.adapter import FRAMEWORK_REGISTRY
 from utils.vire_logger import cfn_log
 
 # Helper
-def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple[str]:
+def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple[str | None, str | None]:
     """
     Args
 
@@ -73,6 +73,8 @@ def sync_docker_run(job_uuid: str)-> None:
     try:
         client = state.client
         expires_at = int(time.time() + state.CONTAINER_EXPIRY)
+        if (state.repo_name is None) or (state.framework is None) or (state.package_manager is None):
+            return
         image, cmd_body = setup_creation(state.repo_name, state.framework, state.package_manager)
 
         if not image or not cmd_body:

@@ -8,8 +8,7 @@ Functions -
 import traceback
 from fastapi import APIRouter
 from Vire.models.pydantic_classes import BuildRequestModel
-from Vire.core.make_worker import scheduler_create_worker
-
+from Vire.core.core_utilities.make_worker import scheduler_create_worker
 
 router = APIRouter()
 

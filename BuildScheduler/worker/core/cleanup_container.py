@@ -5,22 +5,23 @@ Functions -
 1. remove_container (async)
 
 """
-import docker
+
 from utils.state import client
 from utils.vire_logger import cfn_log
-
+from docker.errors import NotFound, APIError
 
 def remove_container(job_uuid: str):
     """Name (UUID4 used for naming) based container remover"""
     try:
         container_obj = client.containers.get(job_uuid)
-    except docker.errors.NotFound:
+    except NotFound:
+        container_obj = None
         pass
     try:
         if container_obj:
             container_obj.wait()
             container_obj.remove(force=True)
-    except docker.errors.APIError as e:
+    except APIError as e:
         if "is already in progress" in str(e).lower():
             cfn_log("info", "[remove_container] Conflict: GC's termination in progress")
         else:

@@ -6,11 +6,11 @@ remote = None
 user_uuid = None
 
 install_req = False
-COMMIT_ID:str = None
+COMMIT_ID:str|None = None
 
 framework, package_manager = None, None
-repo_name = None
-OUTPUT_DIR = None
+repo_name: str|None = None
+OUTPUT_DIR: str|None = None
 
 redis_url = "redis://127.0.0.1:6379" #TODO: change this to whatever the url has to be in prod
 redis_con = redis.Redis.from_url(redis_url)

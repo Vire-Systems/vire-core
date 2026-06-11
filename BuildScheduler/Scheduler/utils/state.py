@@ -9,4 +9,4 @@ logfile_dir = os.path.abspath(os.path.join(Path.home(),"vire_logs","core"))
 os.makedirs(logfile_dir, exist_ok=True)
 
 docker_client = docker.from_env()
-removal_tasks:set[asyncio.Task] = set()
+removal_tasks: set[asyncio.Task[None]] = set()

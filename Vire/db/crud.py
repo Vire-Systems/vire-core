@@ -6,6 +6,7 @@ from typing import Literal
 from Vire.db.db import async_session
 from Vire.db.models import BuildData, BuildState
 from Vire.utils.queues_locks import db_build_queue
+from Vire.errors import db_errors
 
 async def register_build_data(
     job_uuid: str, user_uuid: str, remote_link: str, commit_id: str,
@@ -85,3 +86,21 @@ async def fetch_queued_builds(number_of_builds: int)-> None:
 
         for build_obj in queued_builds:
             await db_build_queue.put(build_obj.job_uuid)
+
+async def update_job_status(
+    job_uuid: str, status_msg: Literal["queued", "running", "crashed", "finished", "cancelled"]
+)-> None:
+    """
+    CRUD function for updating job status in BuildState table.
+    """
+    
+    async with async_session() as session:
+        query = select(BuildState).where(
+            (BuildState.job_uuid == job_uuid) & (BuildState.status == "queued")
+        )
+        result = await session.execute(query)
+        job_state = result.scalar_one_or_none()
+        if not job_state:
+            raise db_errors.NoJobStateError(f"Tried to fetch job state for job_uuid {job_uuid}. But returned Null.")
+        async with session.begin():
+            job_state.status = status_msg
