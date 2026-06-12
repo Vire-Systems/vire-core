@@ -19,3 +19,6 @@ class NoLockfile(Exception):
 
 class UnsupportedGitProvider(Exception):
     """Raise when the git provider isn't supported."""
+
+class RepoFileFetchError(Exception):
+    """Raise when raw file fetch from client provided URL fails."""

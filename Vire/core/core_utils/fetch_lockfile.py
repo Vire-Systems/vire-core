@@ -27,27 +27,29 @@ async def fetch_lockfile_name(username: str, reponame: str, provider: str, commi
     """
     try:
         adapter = PROVIDER_REGISTRY[provider]
+
+        list_dir_url = adapter.return_list_tree(username, reponame, commit_id)
+    
+        gittree_content_req = await send_request(list_dir_url)
+        trees = gittree_content_req.json()["tree"]
+    
+        for node in trees:
+            path = node["path"]
+            if path not in valid_lockfiles:
+                continue
+    
+            if lockfile_matrix.get(path) != pm:
+                continue
+    
+            if node["size"] == 0:
+                raise errors.EmptyLockfile(path)
+    
+            if node["type"] != "blob":
+                continue
+            return path
+    
+        raise errors.NoLockfile()
     except KeyError as key_error:
         raise errors.UnsupportedGitProvider(f"The framework provided ('{provider}') is not supported.") from key_error
-
-    list_dir_url = adapter.return_list_tree(username, reponame, commit_id)
-
-    gittree_content_req = await send_request(list_dir_url)
-    trees = gittree_content_req.json()["tree"]
-
-    for node in trees:
-        path = node["path"]
-        if not path in valid_lockfiles:
-            continue
-
-        if lockfile_matrix.get(path) != pm:
-            continue
-
-        if node["size"] == 0:
-            raise errors.EmptyLockfile(path)
-
-        if node["type"] != "blob":
-            continue
-        return path
-
-    raise errors.NoLockfile()
+    except errors.RepoFileFetchError as e:
+        raise e

@@ -5,13 +5,15 @@ Functions -
     1. fetch_vire_toml
     2. fetch_package_json
 """
-import requests
+
 from Vire.objects.git_provider_adapter import PROVIDER_REGISTRY
-from Vire.errors.errors import InvalidBranchError
+from Vire.errors import errors
 from Vire.utils.async_requests import send_request
 
 #TODO: Requests is blocking, use an async version.
 
+
+# TOML fetch
 async def fetch_vire_toml(
         provider: str,
         remote_user: str, remote_reponame: str,
@@ -28,23 +30,31 @@ async def fetch_vire_toml(
         5. branch - Latest branch which was pushed.
     
     Raises -
-        InvalidBranchError
+        InvalidBranchError, RepoFileFetchError, UnsupportedGitProvider
     Catches -
         Broad 'Exception'
     """
     try:
         adapter = PROVIDER_REGISTRY[provider]
         if not branch:
-            raise InvalidBranchError
+            raise errors.InvalidBranchError
 
         toml_raw_url = adapter.get_raw_url(remote_user, remote_reponame, branch, "vire.toml")
         body = await send_request(toml_raw_url)
         toml_b:bytes = body.content
         toml_str = toml_b.decode(encoding="utf-8")
         return toml_str
-    except Exception as e:
-        print(e) #TODO: Change this later.
+    except KeyError as KE:
+        raise errors.UnsupportedGitProvider(f"The Git provider '{provider}' is not supported yet.") from KE
+    except errors.InvalidBranchError as e:
+        raise e
+    except errors.RepoFileFetchError as e:
+        raise e
+    except Exception:
+        raise errors.RepoFileFetchError("While trying to fetch vire.toml, Vire encountered unexpected errors (Internal Error).")
 
+
+# package.json fetch
 async def fetch_package_json(
         provider: str,
         remote_user: str, remote_reponame: str,
@@ -61,15 +71,24 @@ async def fetch_package_json(
         5. branch - Latest branch which was pushed.
 
     Raises -
-        InvalidBranchError if the branch is invalid.
+        InvalidBranchError, RepoFileFetchError, UnsupportedGitProvider
     """
-    adapter = PROVIDER_REGISTRY[provider]
-    if not branch:
-        raise InvalidBranchError(f"Provided branch ('{branch}')  is Invalid.")
-
-    packagejson_raw_url = adapter.get_raw_url(user=remote_user, repo_name=remote_reponame, branch=branch, path_name="package.json")
-    body = await send_request(packagejson_raw_url)
-    packagejson_bytes = body.content
-    packagejson_str = packagejson_bytes.decode(encoding="utf-8")
-
-    return packagejson_str
+    try:
+        adapter = PROVIDER_REGISTRY[provider]
+        if not branch:
+            raise errors.InvalidBranchError(f"Provided branch ('{branch}')  is Invalid.")
+    
+        packagejson_raw_url = adapter.get_raw_url(user=remote_user, repo_name=remote_reponame, branch=branch, path_name="package.json")
+        body = await send_request(packagejson_raw_url)
+        packagejson_bytes = body.content
+        packagejson_str = packagejson_bytes.decode(encoding="utf-8")
+    
+        return packagejson_str
+    except KeyError as KE:
+        raise errors.UnsupportedGitProvider(f"The Git provider '{provider}' is not supported yet.") from KE
+    except errors.InvalidBranchError as e:
+        raise e
+    except errors.RepoFileFetchError as e:
+        raise e
+    except Exception:
+        raise errors.RepoFileFetchError("While trying to fetch package.json, Vire encountered unexpected errors (Internal Error).")

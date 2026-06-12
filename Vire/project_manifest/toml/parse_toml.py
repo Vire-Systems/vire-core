@@ -6,8 +6,8 @@ Functions-
 """
 
 import tomllib
-from BuildScheduler.Scheduler.project_manifest.toml.schema_check import check_toml_schema
-from BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors import InvalidVireToml
+from Vire.project_manifest.toml.schema_check import check_toml_schema
+from Vire.project_manifest.toml.errors.config_errors import InvalidVireToml
 
 async def parse_toml(toml_string: str)-> tuple[tuple[str, ...], bool]:
     """

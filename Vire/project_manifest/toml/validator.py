@@ -8,7 +8,7 @@ Functions-
 """
 
 from Vire.utils.logger import vire_logger
-from BuildScheduler.Scheduler.project_manifest.toml.errors import config_errors
+from Vire.project_manifest.toml.errors import config_errors
 import re, json
 from BuildScheduler.shared.shared_state import package_managers, lockfile_matrix
 # frameworks vite, astro, vue, react, sveltekit, nextjs, nuxtjs, 11ty

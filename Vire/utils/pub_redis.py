@@ -13,6 +13,6 @@ async def publish_log_redis(line: str, user_uuid: str ,job_uuid: str)-> None:
     try:
         await client.publish(f"logs:{user_uuid}/{job_uuid}", line)
     except Exception as e:
-        vire_logger("critical", "[Core publish_log_redis] Unable to publish logs. Details: %s", e)
+        await vire_logger("critical", "[Core publish_log_redis] Unable to publish logs. Details: %s", e)
     finally:
         await client.aclose()

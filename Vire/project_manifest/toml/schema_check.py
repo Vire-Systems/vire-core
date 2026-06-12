@@ -7,7 +7,7 @@ Functions -
 """
 
 from BuildScheduler.shared.scheduler_logger import vire_logger
-from BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors import InvalidVireToml
+from Vire.project_manifest.toml.errors.config_errors import InvalidVireToml
 
 async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str, ...], bool]:
     """

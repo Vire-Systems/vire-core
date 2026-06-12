@@ -17,8 +17,12 @@ channel_name = "logs:sparrow/test"
 pubsub.subscribe(channel_name)
 print("Subscribed to ", channel_name)
 
-for message in pubsub.listen():
-    if message["type"] == "message":
-        channel = message["channel"]
-        data:bytes = message["data"]
-        print(f"[{channel_name}] Received: {data.decode()}\n")
+while True:
+    try:
+        for message in pubsub.listen():
+            if message["type"] == "message":
+                channel = message["channel"]
+                data:bytes = message["data"]
+                print(f"[{channel_name}] Received: {data.decode()}\n")
+    except redis.TimeoutError:
+        continue

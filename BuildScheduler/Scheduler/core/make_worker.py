@@ -8,9 +8,9 @@ from datetime import datetime
 # um, idk what to call this.. custom imports ?
 from BuildScheduler.Scheduler.core.create_worker import create_worker_process
 from Vire.core.core_utilities.fetch_buildreq import fetch_vire_toml, fetch_package_json
-from BuildScheduler.Scheduler.project_manifest.toml.parse_toml import parse_toml
-from BuildScheduler.Scheduler.project_manifest.toml.validator import validate_package_json, validate_toml
-from BuildScheduler.Scheduler.project_manifest.toml.errors import config_errors
+from Vire.project_manifest.toml.parse_toml import parse_toml
+from Vire.project_manifest.toml.validator import validate_package_json, validate_toml
+from Vire.project_manifest.toml.errors import config_errors
 from Vire.errors import errors
 from Vire.utils.pub_redis import publish_log_redis
 from Vire.core.core_utilities.fetch_lockfile import fetch_lockfile_name
@@ -68,7 +68,7 @@ async def scheduler_create_worker(
 
         except errors.InvalidBranchError:
             await publish_log_redis(
-                line = f"{ts()} : The branch provided ({branch}) does not contain vire.toml. Vire tried to fetch vire.toml from {common_line} in Repo's root but found nothing.)",
+                line = f"{ts()} : The branch provided () does not contain vire.toml. Vire tried to fetch vire.toml from in Repo's root but found nothing.)",
                 user_uuid=user_uuid, job_uuid=job_uuid
             ) ; return
 
