@@ -11,9 +11,9 @@ from BuildScheduler.shared.shared_state import valid_lockfiles, lockfile_matrix
 from Vire.errors import errors
 
 
-async def fetch_lockfile_name(username: str, reponame: str, provider: str, commit_id: str, pm: str):
+async def fetch_lockfile_name(username: str, reponame: str, provider: str, commit_id: str, pm: str)-> str:
     """
-    Fetches all the available lockfiles in the provided commit of the provided repo.
+    Fetches the lockfile in the provided commit of the provided repo.
     
     Returns the name of the lockfile.
 
@@ -34,7 +34,7 @@ async def fetch_lockfile_name(username: str, reponame: str, provider: str, commi
         trees = gittree_content_req.json()["tree"]
     
         for node in trees:
-            path = node["path"]
+            path: str = node["path"]
             if path not in valid_lockfiles:
                 continue
     
@@ -46,6 +46,7 @@ async def fetch_lockfile_name(username: str, reponame: str, provider: str, commi
     
             if node["type"] != "blob":
                 continue
+                
             return path
     
         raise errors.NoLockfile()

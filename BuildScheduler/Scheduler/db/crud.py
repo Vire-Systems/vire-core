@@ -3,30 +3,36 @@ from sqlalchemy import TIMESTAMP
 from typing import Literal
 
 
-from Vire.db.db import async_session
-from Vire.db.models import BuildData, BuildState
-from Vire.utils.queues_locks import db_build_queue
-from Vire.errors import db_errors
+from BuildScheduler.Scheduler.db.db import async_session
+from BuildScheduler.Scheduler.db.models import BuildData, BuildState
+from BuildScheduler.Scheduler.utils.queues_locks import db_build_queue
+from BuildScheduler.Scheduler.errors import db_errors
+from Vire.models.pydantic_classes import BuildRequestModel
 
-async def register_build_data(
-    job_uuid: str, user_uuid: str, remote_link: str, commit_id: str,
-    provider: str, remote_user: str, remote_reponame: str, branch: str,
-)-> None:
+async def register_build_data(BRM: BuildRequestModel)-> None:
     """
     CRUD function for registering a build's data in the local DB.
+
+    Args:
+        BRM - Build Request Model, abbrev. The pydantic class
     """
     async with async_session() as session:
         async with session.begin():
             new_build_data = BuildData(
-                job_uuid=job_uuid, user_uuid = user_uuid, remote_user = remote_user, remote_reponame=remote_reponame, 
-                remote_link=remote_link, commit_id=commit_id, provider = provider, branch=branch
+                job_uuid=BRM.job_uuid,
+                user_uuid = BRM.user_uuid,
+                remote_user = BRM.remote_user,
+                remote_reponame=BRM.remote_reponame, 
+                remote_link=BRM.remote_link,
+                commit_id=BRM.commit_id,
+                provider = BRM.provider,
+                branch=BRM.branch
             )
             session.add(new_build_data)
 
 async def register_build_state(
     job_uuid: str, user_uuid: str,
     status: Literal["queued", "running", "crashed", "finished", "cancelled"],
-    created_at: TIMESTAMP,
 )-> None:
     """
     CRUD function for registering the build's state into the local DB.

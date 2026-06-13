@@ -3,7 +3,7 @@
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-from Vire.utils.state import sqlite_db_path
+from BuildScheduler.Scheduler.utils.state import sqlite_db_path
 
 os.makedirs(os.path.dirname(sqlite_db_path), exist_ok=True)
 

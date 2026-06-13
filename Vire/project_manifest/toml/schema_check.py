@@ -8,8 +8,9 @@ Functions -
 
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.project_manifest.toml.errors.config_errors import InvalidVireToml
+from Vire.objects.dataclass_objects.validation_models import ParsedTOMLObject
 
-async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str, ...], bool]:
+async def check_toml_schema(toml_dict: dict)-> ParsedTOMLObject:
     """
     Validates the schema of the toml file. Also returns whether package install is required.
     
@@ -17,12 +18,7 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str, ...], bool]:
         toml_dict: The dictionary format of toml using tomllib.load.
 
     Returns:
-
-        if pkg install needed:
-        (framework, package_manager, framework_ver, output_dir), True
-
-        if pkg install not needed:
-        (framework, package_manager, framework_ver, output_dir), False
+        ParsedTOMLObject
 
     Raises "BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidVireToml" if toml is malformed.                         
     Raise returns a string with all missing toml_dict keys.
@@ -43,7 +39,7 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str, ...], bool]:
 
         output_dir = project.get("output_dir")
         framework_version = project.get("framework_version")
-        dependencies_req = project.get("dependencies")
+        dependencies_req:bool = project.get("dependencies")
 
         if not framework:
             output_str += "'framework' cannot be null. "
@@ -58,12 +54,14 @@ async def check_toml_schema(toml_dict: dict)-> tuple[tuple[str, ...], bool]:
 
         if output_str:
             raise InvalidVireToml(output_str)
-        if dependencies_req:
-            return (framework, package_manager, framework_version, output_dir), True
-        elif not dependencies_req:
-            return (framework, package_manager, framework_version, output_dir), False
-        else:
-            raise InvalidVireToml(f"'dependencies_req' under the table [projects] can only be bool. Not {dependencies_req}")
+
+        return ParsedTOMLObject(
+            framework=framework,
+            package_manager=package_manager,
+            framework_version=framework_version,
+            output_dir=output_dir,
+            install_req=dependencies_req
+        )
     except Exception as e:
         await vire_logger("critical", "[Core check_toml_template] unable to parse toml. Details: %s. toml_dict: %s", e, toml_dict)
         raise InvalidVireToml(

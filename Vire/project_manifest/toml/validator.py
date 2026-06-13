@@ -7,16 +7,18 @@ Functions-
 2. validate_toml (async)
 """
 
-from Vire.utils.logger import vire_logger
+import re
+import json
 from Vire.project_manifest.toml.errors import config_errors
-import re, json
 from BuildScheduler.shared.shared_state import package_managers, lockfile_matrix
+
 # frameworks vite, astro, vue, react, sveltekit, nextjs, nuxtjs, 11ty
 # pms: npm, pnpm, yarn, bun
 
+# package.json
 async def validate_package_json(package_json_str: str)-> bool:
     """
-    Validates package.json and returns bool (True/False). Is a Helper called by 'validate_toml'.
+    Validates package.json and raises errors mentioned below. Is a Helper called by 'validate_toml'.
     
     Args:
         package.json - str
@@ -38,23 +40,19 @@ async def validate_package_json(package_json_str: str)-> bool:
                 f"The following keys cannot be present in package.json. The invalid keys: {tuple(key for key in found_keys)}"
             )
         return True
+
     except config_errors.InvalidPackageJson as e:
         raise e
     except Exception as e:
-        await vire_logger(
-            "critical", "[Core validate_package_json] Unable to validate package.json. Details: %s. package.json : %s",
-            e, package_json
-        )
-        return False
+        raise config_errors.InvalidPackageJson(f"Encountered unexpected errors while attempting to parse package.json. Details: {type(e).__name__}") from e
 
-async def validate_toml(lockfile_name: str | None, package_manager: str, output_dir: str)-> bool:
+
+# TOML
+async def validate_toml(lockfile_name: str | None, package_manager: str, output_dir: str)-> None:
     """
     Validates the vire.toml file.
 
-    Behavior:
-        Returns False if "{"preinstall", "postinstall", "install", "prepare", "prepublish"}" is present in pacakge.json[scripts].
-
-    Raises
+    Raises -
         
     'PackageManagerException' -
         1. if the given package_manager (arg) is invalid (unsupported).
@@ -73,16 +71,12 @@ async def validate_toml(lockfile_name: str | None, package_manager: str, output_
 
     if lockfile_name:
         if lockfile_matrix.get(lockfile_name) != package_manager:
-            # pylint: disable=line-too-long
             raise config_errors.PackageManagerException(
                 f"The lockfile ('{lockfile_name}') fetched by Vire does not match the Lockfile associated with the package manager ('{package_manager}') provided in your vire.toml."
             )
-            #pylint: enable=line-too-long
 
     allowed = re.fullmatch(r"[a-zA-Z0-9_]+", output_dir)
     if not allowed:
         raise config_errors.InvalidOutDir(
             f"The output directory ({output_dir}) is not allowed. Only alphanumeric and underscore characters are allowed."
         )
-
-    return True

@@ -11,8 +11,8 @@ Functions -
 from sqlalchemy import TIMESTAMP, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from Vire.db.db import Base, engine
-from Vire.utils.logger import vire_logger
+from BuildScheduler.Scheduler.db.db import Base, engine
+from BuildScheduler.shared.scheduler_logger import vire_logger
 
 
 class BuildData(Base):
@@ -54,8 +54,8 @@ class BuildState(Base):
     user_uuid: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
-    finished_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP)
-    error: Mapped[str] = mapped_column(String)
+    finished_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=True)
+    error: Mapped[str] = mapped_column(String, nullable=True)
 
 
 async def init_db():

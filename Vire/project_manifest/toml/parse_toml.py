@@ -8,8 +8,9 @@ Functions-
 import tomllib
 from Vire.project_manifest.toml.schema_check import check_toml_schema
 from Vire.project_manifest.toml.errors.config_errors import InvalidVireToml
+from Vire.objects.dataclass_objects.validation_models import ParsedTOMLObject
 
-async def parse_toml(toml_string: str)-> tuple[tuple[str, ...], bool]:
+async def parse_toml(toml_string: str)-> ParsedTOMLObject:
     """
     Parses vire.toml from toml string.
     
@@ -17,12 +18,7 @@ async def parse_toml(toml_string: str)-> tuple[tuple[str, ...], bool]:
         toml_string - string returned from reading the repo's vire.toml.
 
     Returns:
-        tup[tup[8 strings ]]
-        if pkg install needed:
-        (framework, package_manager, framework_ver, output_dir), True
-
-        if pkg install not needed:
-        (framework, package_manager, framework_ver, output_dir), False
+        ParsedTOMLObject
 
     Raises:
         'InvalidVireToml' if 'check_toml_schema' raises InvalidVireToml

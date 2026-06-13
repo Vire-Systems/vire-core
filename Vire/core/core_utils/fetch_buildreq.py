@@ -64,6 +64,7 @@ async def fetch_package_json(
     Fetches package.json from the provided provider's File content fetching APIs.
     
     Args -
+
         1. provider - The name of the git provider (ex: 'github', 'gitlab', etc)
         2. remote_user - The username of the build requester. (ex: Vire-Systems in "https://github.com/Vire-Systems/...")
         3. remote_reponame - The repository name (ex: vire in "https://github.com/Vire-Systems/vire/...")
@@ -86,9 +87,12 @@ async def fetch_package_json(
         return packagejson_str
     except KeyError as KE:
         raise errors.UnsupportedGitProvider(f"The Git provider '{provider}' is not supported yet.") from KE
+        
     except errors.InvalidBranchError as e:
         raise e
+        
     except errors.RepoFileFetchError as e:
         raise e
+        
     except Exception:
         raise errors.RepoFileFetchError("While trying to fetch package.json, Vire encountered unexpected errors (Internal Error).")
