@@ -1,6 +1,6 @@
 import uvicorn, logging, os
 from application import app
-from BuildScheduler.Scheduler.utils.state import logfile_dir
+from Vire.utils.state import logfile
 from BuildScheduler.shared.logger_setup import setup_async_logging, stop_async_logging
 
 logger = logging.getLogger(__name__)
@@ -9,8 +9,7 @@ logger = logging.getLogger(__name__)
 
 if __name__=="__main__":
     try:
-        logfile_location = os.path.join(logfile_dir, "scheduler.log")
-        setup_async_logging(logfile_location)
+        setup_async_logging(logfile)
         uvicorn.run("main:app", host="127.0.0.1", port = 8000)
     finally:
         stop_async_logging()

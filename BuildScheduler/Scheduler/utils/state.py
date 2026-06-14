@@ -14,4 +14,3 @@ removal_tasks: set[asyncio.Task[None]] = set()
 sqlite_db_path = os.path.join(Path.home(), "Vire-DB", "vire_state.db")
 
 MAX_BUILDS_NUMBER = 10
-worker_task_set: set[asyncio.Task[None]] = set()

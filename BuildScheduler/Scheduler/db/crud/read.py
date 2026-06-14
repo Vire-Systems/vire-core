@@ -7,7 +7,7 @@ from sqlalchemy.future import select
 from BuildScheduler.Scheduler.dataclass_models.scheduler_dc import WorkerCreationParams
 from BuildScheduler.Scheduler.db.models import BuildData, BuildState
 from BuildScheduler.Scheduler.db.db import async_session
-from BuildScheduler.Scheduler.utils.queues_locks import db_build_queue
+from BuildScheduler.Scheduler.utils.queues_locks import db_build_queue, queue_insert_lock
 
 
 async def fetch_build_data(job_uuid: str)-> WorkerCreationParams | None:
@@ -52,10 +52,11 @@ async def fetch_queued_builds(number_of_builds: int)-> None:
     Behavior - 
         Fetches all builds with status = 'queued'. Then puts them into an asyncio.Queue.
     """
-    async with async_session() as session:
-        query = select(BuildState).where(BuildState.status == "queued").limit(number_of_builds)
-        result = await session.execute(query)
-        queued_builds = result.scalars().all()
-
-        for build_obj in queued_builds:
-            await db_build_queue.put(build_obj.job_uuid)
+    async with queue_insert_lock:
+        async with async_session() as session:
+            query = select(BuildState).where(BuildState.status == "queued").limit(number_of_builds)
+            result = await session.execute(query)
+            queued_builds = result.scalars().all()
+    
+            for build_obj in queued_builds:
+                await db_build_queue.put(build_obj.job_uuid)

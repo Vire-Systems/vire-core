@@ -14,6 +14,7 @@ from BuildScheduler.Scheduler.dataclass_models.scheduler_dc import WorkerCreatio
 from BuildScheduler.Scheduler.errors.scheduler_errors import JobCreationFailed
 from BuildScheduler.Scheduler.manage_worker.del_container import delayed_delete
 from BuildScheduler.shared.scheduler_logger import vire_logger
+from BuildScheduler.Scheduler.db.crud import update
 
 async def create_worker_process(WCP : WorkerCreationParams) -> None:
     """
@@ -68,8 +69,10 @@ async def create_worker_process(WCP : WorkerCreationParams) -> None:
             """))
         try:
             subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            await update.update_job_status(job_uuid=WCP.job_uuid, status_msg="running")
             await delayed_delete(WCP.job_uuid)
         except Exception as e:
             await vire_logger("critical", "[create_worker] Worker creation failed. Details: %s", e)
+            await update.update_job_status(job_uuid=WCP.job_uuid, status_msg="crashed")
 
     await _wk_helper(WCP)

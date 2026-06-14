@@ -1,8 +1,8 @@
 import logging
 
-logger = logging.getLogger()
 
 async def vire_logger(log_type: str, obj:str, *args)-> None:
+    logger = logging.getLogger()
     """async, log_type levels: [info | warn | error | critical | exit]"""
     try:
         l_type = log_type.lower()

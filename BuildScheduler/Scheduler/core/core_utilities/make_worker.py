@@ -3,13 +3,10 @@ This module (make_worker) is repsonsible with providing an abstracted function c
 This is made so that the API layer does not mess with fetching raw data, parsing, etc.
 """
 
-# um, idk what to call this.. custom imports ?
-
 import traceback
 
 from BuildScheduler.Scheduler.db.crud import read, update
 from BuildScheduler.Scheduler.manage_worker.create_worker import create_worker_process
-from Vire.utils.pub_redis import publish_log_redis
 
 async def scheduler_create_worker(job_uuid: str)-> None:
     try:

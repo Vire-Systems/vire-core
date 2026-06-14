@@ -10,6 +10,7 @@ from sqlalchemy.future import select
 from BuildScheduler.Scheduler.db.db import async_session
 from BuildScheduler.Scheduler.db.models import BuildState
 from BuildScheduler.Scheduler.errors import db_errors
+from BuildScheduler.Scheduler.utils.queues_locks import job_status_locks
 
 async def update_job_status(
     job_uuid: str,
@@ -21,12 +22,13 @@ async def update_job_status(
     Raises NoJobStateError
     """
 
-    async with async_session() as session:
-        async with session.begin():
-            query = select(BuildState).where((BuildState.job_uuid == job_uuid) & (BuildState.status == "queued"))
-            result = await session.execute(query)
-            job_state = result.scalar_one_or_none()
-            if not job_state:
-                raise db_errors.NoJobStateError(f"Tried to fetch job state for job_uuid {job_uuid}. But returned Null.")
-            job_state.status=status_msg
-            job_state.finished_at = func.now()
+    async with job_status_locks[job_uuid]:
+        async with async_session() as session:
+            async with session.begin():
+                query = select(BuildState).where((BuildState.job_uuid == job_uuid) & (BuildState.status == "queued"))
+                result = await session.execute(query)
+                job_state = result.scalar_one_or_none()
+                if not job_state:
+                    raise db_errors.NoJobStateError(f"Tried to fetch job state for job_uuid {job_uuid}. But returned Null.")
+                job_state.status=status_msg
+                job_state.finished_at = func.now()

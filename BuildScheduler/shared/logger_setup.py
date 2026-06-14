@@ -12,7 +12,7 @@ from logging.handlers import QueueHandler, QueueListener
 
 LISTENER: QueueListener = None
 
-def setup_async_logging(log_file, log_level: int = logging.WARN):
+def setup_async_logging(log_file, log_level: int = logging.INFO):
     """A logging setup using logging module's built in QueueHandler and QueueListener."""
     global LISTENER
 
