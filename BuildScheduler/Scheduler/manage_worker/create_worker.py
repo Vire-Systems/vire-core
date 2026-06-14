@@ -5,53 +5,71 @@ Functions -
 1. create_worker_process (async)
 """
 
-import subprocess, json
-from BuildScheduler.shared.scheduler_logger import vire_logger
-from BuildScheduler.Scheduler.core.del_container import delayed_delete
+import json
+import os
+import subprocess
+from textwrap import dedent
 
-async def create_worker_process(json_struct: tuple)-> None:
+from BuildScheduler.Scheduler.dataclass_models.scheduler_dc import WorkerCreationParams
+from BuildScheduler.Scheduler.errors.scheduler_errors import JobCreationFailed
+from BuildScheduler.Scheduler.manage_worker.del_container import delayed_delete
+from BuildScheduler.shared.scheduler_logger import vire_logger
+
+async def create_worker_process(WCP : WorkerCreationParams) -> None:
     """
     An abstraction for worker process creation.
 
-    json_struct:
-        1. job_uuid - string, Job's uuid4.
-        2. user_uuid - string, User's uuid4.
-        3. remote - string, Remote link (ex: GitHub link, GitLab link, etc.).
-        4. repo_name - string, Name of repository.
-        5. framework - string, Name of the framework (ex: nextjs, vite, etc).
-        6. pm - string, Name of the package manager (ex: npm, pnpm, etc).
-        7. install_req - bool, Whether to run the package manager's install command or not.
-        8. output_dir - string, User provided output directory.
-        9. commit_id - commit SHA or None
+    Args- 
+        WCP - Worker creation params, abbrev. Params for this function.
+
+    Raises JobCreationFailed
     """
-    async def _wk_helper(json_struct)-> None:
-        job_uuid, user_uuid, remote, repo_name, framework, pm, install_req, output_dir, commit_id = json_struct
+
+    async def _wk_helper(WCP: WorkerCreationParams) -> None:
         try:
+            # I def didn't forget to change paths after the refactor 😑 /s
+            python_bin_path = "/home/vire/vire/venv/bin/python"
+            worker_path = "/home/vire/vire/BuildScheduler/worker/worker.py"
+            if not os.path.exists(python_bin_path):
+                await vire_logger("exit", "Path for python bin does not exist. Fix it. Current path appears to be %s", python_bin_path)
+            if not os.path.exists(worker_path):
+                await vire_logger("exit", "The path for worker does not exist. Fix it. Current path appears to be %s", worker_path)
+
             cmd_b = {
-                "job_uuid": job_uuid,
-                "user_uuid": user_uuid,
-                "remote": remote,
-                "repo_name": repo_name,
-                "framework": framework,
-                "pm": pm,
-                "install_req": install_req,
-                "output_dir":output_dir,
-                "commit_id":commit_id
+                "job_uuid": WCP.job_uuid,
+                "user_uuid": WCP.user_uuid,
+                "remote": WCP.remote_link,
+                "repo_name": WCP.repo_name,
+                "framework": WCP.framework,
+                "pm": WCP.pm,
+                "output_dir": WCP.output_dir,
+                "install_req": WCP.install_req,
+                "commit_id": WCP.commit_id,
             }
             argument = json.dumps(cmd_b)
             cmd = [
                 "nohup",
-                "/home/vire/Vire-Core/venv/bin/python",
-                "/home/vire/Vire-Core/BuildScheduler/worker/worker.py",
-                "--json_struct", argument
+                python_bin_path,
+                worker_path,
+                "--json_struct",
+                argument,
             ]
         except Exception as e:
-            await vire_logger("critical", "[_wk_helper] Parsing the command for creating a worker failed. Details %s", e)
-        try:
-            subprocess.Popen( #pylint: disable=consider-using-with
-                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+            await vire_logger(
+                "critical", "[_wk_helper] Worker creation failed for job_uuid: %s, user_uuid: %s. Details: %s",
+                WCP.job_uuid, WCP.user_uuid,e
             )
-            await delayed_delete(job_uuid)
+            raise JobCreationFailed(dedent(
+                f"""
+                The creation of worker process failed. Failed to create build container process.
+                Details:
+                  Job UUID: {WCP.job_uuid}
+                  User UUID: {WCP.user_uuid}
+            """))
+        try:
+            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            await delayed_delete(WCP.job_uuid)
         except Exception as e:
             await vire_logger("critical", "[create_worker] Worker creation failed. Details: %s", e)
-    await _wk_helper(json_struct)
+
+    await _wk_helper(WCP)

@@ -10,7 +10,7 @@ from Vire.objects.dataclass_objects.validation_models import TOMLValidationParam
 from Vire.project_manifest.toml.validator import validate_toml
 from Vire.utils.pub_redis import publish_log_redis
 
-async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PTO: ParsedTOMLObject)-> bool:
+async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PTO: ParsedTOMLObject)-> None:
     """
     Validates vire.toml fetched from the user's repo.
 

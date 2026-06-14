@@ -80,7 +80,6 @@ def sync_docker_run(job_uuid: str)-> None:
         if not image or not cmd_body:
             raise ContainerCreationFail(f"{'Image' if not image else 'cmd'} Cannot be none.")
         cmd = ["sh", "-c", cmd_body]
-        print(cmd)
         client.containers.run(
             name = job_uuid,
             image = image, command = cmd,

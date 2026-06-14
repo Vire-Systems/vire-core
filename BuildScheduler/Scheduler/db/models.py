@@ -8,8 +8,9 @@ Functions -
     1. init (async)
 """
 
-from sqlalchemy import TIMESTAMP, String, func
+from sqlalchemy import TIMESTAMP, Boolean, String, func
 from sqlalchemy.orm import Mapped, mapped_column
+from datetime import datetime
 
 from BuildScheduler.Scheduler.db.db import Base, engine
 from BuildScheduler.shared.scheduler_logger import vire_logger
@@ -29,16 +30,16 @@ class BuildData(Base):
         remote_reponame: str,
         branch: str
     """
-
     __tablename__ = "BuildData"
     job_uuid: Mapped[str] = mapped_column(String, nullable=False, primary_key=True)
     user_uuid: Mapped[str] = mapped_column(String, nullable=False)
     remote_link: Mapped[str] = mapped_column(String, nullable=False)
     commit_id: Mapped[str] = mapped_column(String, nullable=False)
-    provider: Mapped[str] = mapped_column(String, nullable=False)
-    remote_user: Mapped[str] = mapped_column(String, nullable=False)
-    remote_reponame: Mapped[str] = mapped_column(String, nullable=False)
-    branch: Mapped[str] = mapped_column(String, nullable=False)
+    repo_name: Mapped[str] = mapped_column(String, nullable=False)
+    framework: Mapped[str] = mapped_column(String, nullable=False)
+    pm: Mapped[str] = mapped_column(String, nullable=False)
+    install_req: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    output_dir: Mapped[str] = mapped_column(String, nullable=False)
 
 
 class BuildState(Base):
@@ -48,13 +49,12 @@ class BuildState(Base):
     This SQLAlchemy schema handles build states.
     Only running / queued builds should be present here.
     """
-
     __tablename__ = "BuildState"
     job_uuid: Mapped[str] = mapped_column(String, nullable=False, primary_key=True)
     user_uuid: Mapped[str] = mapped_column(String, nullable=False)
     status: Mapped[str] = mapped_column(String, nullable=False)
-    created_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
-    finished_at: Mapped[TIMESTAMP] = mapped_column(TIMESTAMP, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=func.now())
+    finished_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True)
     error: Mapped[str] = mapped_column(String, nullable=True)
 
 

@@ -28,7 +28,7 @@ def load_parser():
             "pm":"<package manager>",
             "output_dir":"<dir>"
             "install_req":"<Bool>",
-            "commit_id":"<sha256> or null"
+            "commit_id":"<sha256> str"
         }'""")
     args = parser.parse_args()
     json_struct: dict = json.loads(args.json_struct)

@@ -21,7 +21,7 @@ from Vire.objects.dataclass_objects.validation_models import(
 )
 
 # Validate
-async def validate_details(VC: ValidatorContext)-> bool | None:
+async def validate_details(VC: ValidatorContext)-> ParsedTOMLObject | None:
     """
     The abstracted function for validating build data (vire.toml, package.json, lockfile verification) provided by the user.
 
@@ -60,9 +60,6 @@ async def validate_details(VC: ValidatorContext)-> bool | None:
             ts=ts()
         )
 
-        #if not toml_data:
-        #    return False
-
     # Lockfile validation
         lockfile_params = LockfileValidationParams(
             install_req=toml_data.install_req,
@@ -96,6 +93,6 @@ async def validate_details(VC: ValidatorContext)-> bool | None:
 
         await fetch_and_validate_pkgjson(VC=VC, PJVP=validate_pkgjson_obj)
 
-        return True
+        return toml_data
     except Exception:
         traceback.print_exc()

@@ -18,7 +18,7 @@ from cli_parser import load_parser
 from utils import state
 from schema.errors import ContainerCreationFail, CredentialError
 from utils.vire_logger import cfn_log
-from docker.errors import NotFound, APIError
+from docker.errors import NotFound
 
 from core.create_container_job import container_create
 from core.cleanup_container import remove_container
@@ -54,43 +54,43 @@ async def main():
             cfn_log("critical", "[main] worker unable to run for job '%s'. Marking as crashed. Details: %s", state.job_uuid, e)
         else:
             cfn_log("critical", "[main] worker unable to run for job. [UUID unavailable]. Marking as crashed. Details: %s", e)
+    finally:
+        try:
+            output_dir = state.OUTPUT_DIR
+            if not output_dir:
+                raise ContainerCreationFail("Output directory could not be resolved.")
+            output_dir = os.path.join("/workspace", f"{state.repo_name}", output_dir)
+            try:
+                if state.job_uuid:
+                    stream, stat = client.api.get_archive(state.job_uuid, output_dir)
+                    with open(f"/home/vire/vire/test/{state.job_uuid}.tar", "wb") as tar_file: #TODO: Change this path
+                        for chunk in stream:
+                            tar_file.write(chunk)
+            except NotFound:
+                cfn_log("critical", "Toml path not found.")
+                publish_log_redis("Given path in toml not found.") # TODO: Add better error
+        except Exception as e:
+            mark_unavailable("idk") #TODO Change this
+            cfn_log("critical", "smtn happened. %s", e)
+        job_uuid = state.job_uuid
+        try:
+            if job_uuid:
+                remove_container(job_uuid=job_uuid)
+        except Exception as e:
+            cfn_log("critical", "[worker entry_point] remove_container unable to remove the container. Details %s", e)
 
+def init():
+    load_parser()
+    logfile_location = setup_logfile_location(state.job_uuid)
+    logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.INFO)
 
 # Entry point
 if __name__ == "__main__":
     try:
-        load_parser()
-        logfile_location = setup_logfile_location(state.job_uuid)
-        logging.basicConfig(filename=logfile_location, encoding='utf-8', level=logging.INFO)
-
+        init()
         asyncio.run(main())
     except KeyError:
         publish_log_redis("Credential error: Credentials provided were incorrect.")
         print("Keyerror")
     except Exception as e:
         print(e)
-    finally:
-        try:
-            output_dir = state.OUTPUT_DIR
-            if not output_dir:
-                raise ContainerCreationFail("Output directory could not be resolved.")
-            output_dir = os.path.join("/workspace", state.repo_name, output_dir)
-            print(output_dir)
-            try:
-                stream, stat = client.api.get_archive(state.job_uuid, output_dir)
-            except NotFound:
-                print(output_dir)
-                cfn_log("critical", "Toml path not found.")
-                publish_log_redis("Given path in toml not found.") # TODO: Add better error
-                exit(1)
-            with open("/home/vire/Vire-Core/test/test.tar", "wb") as tar_file: #TODO: Change this path
-                for chunk in stream:
-                    tar_file.write(chunk)
-        except Exception as e:
-            mark_unavailable("idk") #TODO Change this
-            cfn_log("critical", "smtn happened. %s", e)
-        job_uuid = state.job_uuid
-        try:
-            remove_container(job_uuid=job_uuid)
-        except Exception as e:
-            cfn_log("critical", "[worker entry_point] remove_container unable to remove the container. Details %s", e)
