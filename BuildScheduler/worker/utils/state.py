@@ -1,22 +1,40 @@
-import os, docker, redis
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+import docker
+import redis
+
+load_dotenv("/home/vire/vire/.env")
+
+# State
 job_uuid = None
 remote = None
 user_uuid = None
 
 install_req = False
-COMMIT_ID:str|None = None
+COMMIT_ID: str | None = None
 
-framework, package_manager = None, None
-repo_name: str|None = None
-OUTPUT_DIR: str|None = None
+framework = None
+package_manager = None
+repo_name: str | None = None
+OUTPUT_DIR: str | None = None
 
-redis_url = "redis://127.0.0.1:6379" #TODO: change this to whatever the url has to be in prod
-redis_con = redis.Redis.from_url(redis_url)
-
-logfile_dir = os.path.abspath(os.path.join(Path.home(),"vire_logs/workers"))
-os.makedirs(logfile_dir, exist_ok=True)
 CONTAINER_EXPIRY = 300
-
 client = docker.from_env()
+
+# Redis
+redis_url = os.getenv("REDIS_URL")
+
+if redis_url:
+    redis_con = redis.Redis.from_url(redis_url)
+else:
+    print(f"Redis URL in {Path(__file__).resolve()} is {redis_url}.")
+
+# Files
+logfile_dir = os.getenv("WORKER_LOGDIR")
+if logfile_dir:
+    os.makedirs(logfile_dir, exist_ok=True)
+else:
+    print(f"'logfile_dir' in {Path(__file__).resolve()} is {logfile_dir}.")
+

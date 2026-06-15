@@ -1,10 +1,17 @@
+import aiosqlite as asql
 import asyncio
 
-from BuildScheduler.Scheduler.core.dispatch_from_queue import dispatch_queued_job
-from BuildScheduler.Scheduler.db.crud.read import fetch_queued_builds
+# test
+async def idk( job_uuid: str, status: str, prev_status: str):
+    async with asql.connect("/home/vire/Vire-DB/vire_state.db") as db:
+        await db.execute("""
+            UPDATE BuildState
+            SET status=?
+            WHERE 
+            job_uuid=? AND status=?
+            """,
+            (status, job_uuid, prev_status)
+        )
+        await db.commit()
 
-async def test():
-    await fetch_queued_builds(10)
-    await dispatch_queued_job(10)
-
-asyncio.run(test())
+asyncio.run(idk("test", "finished", "running"))

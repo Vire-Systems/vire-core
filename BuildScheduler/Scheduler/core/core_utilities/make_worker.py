@@ -16,7 +16,6 @@ async def scheduler_create_worker(job_uuid: str)-> None:
             return
   
         await create_worker_process(job_data)
-        await update.update_job_status(job_uuid=job_data.job_uuid, status_msg="finished")
     except Exception as e:
         traceback.print_exc()
         print("scheduler_create_worker failed", e)

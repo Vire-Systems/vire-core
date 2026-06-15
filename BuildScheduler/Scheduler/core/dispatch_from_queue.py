@@ -37,4 +37,3 @@ async def dispatch_queued_job(available_slots)-> Literal["queued", "started"] | 
             except asyncio.QueueEmpty:
                 break
     await launch_workers(job_uuids=job_uuids)
-    print("jobs launched")

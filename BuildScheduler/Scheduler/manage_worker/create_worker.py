@@ -13,6 +13,7 @@ from textwrap import dedent
 from BuildScheduler.Scheduler.dataclass_models.scheduler_dc import WorkerCreationParams
 from BuildScheduler.Scheduler.errors.scheduler_errors import JobCreationFailed
 from BuildScheduler.Scheduler.manage_worker.del_container import delayed_delete
+from BuildScheduler.Scheduler.utils.state import python_bin_path, worker_path
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from BuildScheduler.Scheduler.db.crud import update
 
@@ -29,12 +30,10 @@ async def create_worker_process(WCP : WorkerCreationParams) -> None:
     async def _wk_helper(WCP: WorkerCreationParams) -> None:
         try:
             # I def didn't forget to change paths after the refactor 😑 /s
-            python_bin_path = "/home/vire/vire/venv/bin/python"
-            worker_path = "/home/vire/vire/BuildScheduler/worker/worker.py"
-            if not os.path.exists(python_bin_path):
-                await vire_logger("exit", "Path for python bin does not exist. Fix it. Current path appears to be %s", python_bin_path)
-            if not os.path.exists(worker_path):
-                await vire_logger("exit", "The path for worker does not exist. Fix it. Current path appears to be %s", worker_path)
+            if not python_bin_path:
+                await vire_logger("exit", "Path for python bin does not exist. Fix it. Current path appears to be 'None'.")
+            if not worker_path:
+                await vire_logger("exit", "The path for worker does not exist. Fix it. Current path appears to be 'None'.")
 
             cmd_b = {
                 "job_uuid": WCP.job_uuid,

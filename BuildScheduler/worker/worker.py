@@ -61,11 +61,12 @@ async def main():
                 raise ContainerCreationFail("Output directory could not be resolved.")
             output_dir = os.path.join("/workspace", f"{state.repo_name}", output_dir)
             try:
-                if state.job_uuid:
-                    stream, stat = client.api.get_archive(state.job_uuid, output_dir)
-                    with open(f"/home/vire/vire/test/{state.job_uuid}.tar", "wb") as tar_file: #TODO: Change this path
-                        for chunk in stream:
-                            tar_file.write(chunk)
+                if  not state.job_uuid:
+                    exit()
+                stream, stat = client.api.get_archive(state.job_uuid, output_dir)
+                with open(f"/home/vire/vire/test/{state.job_uuid}.tar", "wb") as tar_file: #TODO: Change this path
+                    for chunk in stream:
+                        tar_file.write(chunk)
             except NotFound:
                 cfn_log("critical", "Toml path not found.")
                 publish_log_redis("Given path in toml not found.") # TODO: Add better error

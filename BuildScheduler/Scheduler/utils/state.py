@@ -1,16 +1,21 @@
 import os, asyncio, docker
 from pathlib import Path
+from dotenv import load_dotenv
 
 CONTAINER_REMOVAL_DELAY = 300
 
-redis_url = "redis://127.0.0.1:6379" #TODO : Change this URL later
+load_dotenv("/home/vire/vire/.env")
 
-logfile_dir = os.path.abspath(os.path.join(Path.home(),"vire_logs","core"))
-os.makedirs(logfile_dir, exist_ok=True)
+
+redis_url =  os.getenv("REDIS_URL")
+sqlite_db_path = os.getenv("DB_PATH")
+DB_URL = os.getenv("DB_URL")
+
+# Worker launching stuff
+python_bin_path = os.getenv("PYTHON_BIN_PATH")
+worker_path = os.getenv("WORKER_PATH")
+
+# State
 docker_client = docker.from_env()
 removal_tasks: set[asyncio.Task[None]] = set()
-
-
-sqlite_db_path = os.path.join(Path.home(), "Vire-DB", "vire_state.db")
-
 MAX_BUILDS_NUMBER = 10

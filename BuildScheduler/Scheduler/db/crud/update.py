@@ -15,6 +15,7 @@ from BuildScheduler.Scheduler.utils.queues_locks import job_status_locks
 async def update_job_status(
     job_uuid: str,
     status_msg: Literal["queued", "running", "crashed", "finished", "cancelled"],
+    old_status: Literal["queued", "running", "crashed", "finished", "cancelled"] = "queued"
 ) -> None:
     """
     CRUD function for updating job status in BuildState table.
@@ -25,7 +26,7 @@ async def update_job_status(
     async with job_status_locks[job_uuid]:
         async with async_session() as session:
             async with session.begin():
-                query = select(BuildState).where((BuildState.job_uuid == job_uuid) & (BuildState.status == "queued"))
+                query = select(BuildState).where((BuildState.job_uuid == job_uuid) & (BuildState.status == old_status))
                 result = await session.execute(query)
                 job_state = result.scalar_one_or_none()
                 if not job_state:
