@@ -33,6 +33,11 @@ else:
 
 # Files
 logfile_dir = os.getenv("WORKER_LOGDIR")
+db_file = os.getenv("DB_PATH")
+if not db_file:
+    print(f"'db_file' in {Path(__file__).resolve()} is {db_file}.")
+    exit(1)
+
 if logfile_dir:
     os.makedirs(logfile_dir, exist_ok=True)
 else:

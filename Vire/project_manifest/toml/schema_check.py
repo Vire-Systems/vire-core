@@ -62,6 +62,8 @@ async def check_toml_schema(toml_dict: dict)-> ParsedTOMLObject:
             output_dir=output_dir,
             install_req=dependencies_req
         )
+    except InvalidVireToml as e:
+        raise e
     except Exception as e:
         await vire_logger("critical", "[Core check_toml_template] unable to parse toml. Details: %s. toml_dict: %s", e, toml_dict)
         raise InvalidVireToml(

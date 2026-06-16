@@ -55,9 +55,11 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
             raise InstallReqMismatch("'install_req' can only be a bool.")
 
         return image, cmd_body
+    except InstallReqMismatch as e:
+        raise e
     except Exception as e:
         cfn_log("critical", "[worker setup_creation] Unable to initialize setup. Details: %s", e)
-        return None, None
+        raise e
 
 # Helper called by 'container_create'.
 def sync_docker_run(job_uuid: str)-> None:
@@ -90,6 +92,8 @@ def sync_docker_run(job_uuid: str)-> None:
                 "expires_at": str(expires_at)
             },
         )
+    except InstallReqMismatch as e:
+        raise ContainerCreationFail(str(e))
     except Exception as e:
         cfn_log("critical", "[sync_docker_run] Job '%s' was unsuccessful. Details: %s", job_uuid, e )
         raise ContainerCreationFail(f"Container spin up unsucessful. Details: {e}") from e

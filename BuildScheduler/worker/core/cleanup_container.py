@@ -30,3 +30,4 @@ def remove_container(job_uuid: str):
             )
     except Exception as e:
         cfn_log("critical", "[remove_container] Removal of container '%s' was unsuccessful. Details: %s", job_uuid, e)
+        raise e
