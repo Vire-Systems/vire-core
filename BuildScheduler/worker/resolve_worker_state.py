@@ -15,6 +15,11 @@ status_update_allowlist: dict[str,list] = {
 def db_session(db_name: str):
     connection = sqlite3.connect(db_name)
     try:
+        cursor = connection.cursor()
+
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA busy_timeout=5000")
+
         yield connection
         connection.commit()
     except Exception:

@@ -3,11 +3,11 @@ This module (pub_redis) is responsible for providing an async redis publisher fu
 """
 
 import redis.asyncio as redis
-from Vire.utils import state
-from Vire.utils.logger import vire_logger
+from logger.scheduler_logger import vire_logger
+from state import redis_url
 
-assert state.redis_url is not None
-client = redis.Redis.from_url(state.redis_url)
+assert redis_url is not None
+client = redis.Redis.from_url(redis_url)
 
 async def publish_log_redis(line: str, user_uuid: str ,job_uuid: str)-> None:
     """Publishes a single line to the channel 'logs:<user_uuid>/<job_uuid>'."""

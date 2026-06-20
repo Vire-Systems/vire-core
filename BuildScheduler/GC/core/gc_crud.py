@@ -1,0 +1,32 @@
+import aiosqlite
+from state import db_path
+
+assert db_path is not None
+
+async def get_user_uuid(job_uuid: str)-> str | None:
+    async with aiosqlite.connect(db_path) as db:
+        query = "SELECT user_uuid FROM BuildState WHERE job_uuid=?"
+        await db.execute("PRAGMA journal_mode=WAL")
+        await db.execute("PRAGMA busy_timeout=5000")
+        cursor = await db.execute(query, (job_uuid,))
+
+        user_uuid = await cursor.fetchone()
+        if not user_uuid:
+            return None
+        return user_uuid[0]
+
+async def update_job_status(
+    job_uuids: list[str],
+    status="terminated"
+)-> None:
+    async with aiosqlite.connect(db_path) as db:
+        placeholders = ','.join('?' for _ in job_uuids)
+        query = f"UPDATE BuildState SET status=? WHERE job_uuid IN ({placeholders})"
+
+        # Pragmas
+        await db.execute("PRAGMA journal_mode=WAL")
+        await db.execute("PRAGMA busy_timeout=5000")
+
+        #Main logic
+        await db.execute(query, (status,tuple(job_uuids)))
+        await db.commit()

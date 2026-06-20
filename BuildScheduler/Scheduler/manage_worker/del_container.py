@@ -51,7 +51,7 @@ async def delayed_delete_helper(job_uuid: str)-> None:
     """Sleeps for 300s (state.CONTAINER_REMOVAL_DELAY) and kills the specified container if it's still alive."""
     await asyncio.sleep(state.CONTAINER_REMOVAL_DELAY) # in seconds
     try:
-        container_obj: Container = await get_container_object(job_uuid, client)
+        container_obj: Container | None = await get_container_object(job_uuid, client)
         if container_obj:
             await asyncio.to_thread(container_obj.remove,force=True)
             

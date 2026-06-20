@@ -1,13 +1,14 @@
 import logging
 import os
 from pathlib import Path
-from typing import Literal
 from dotenv import load_dotenv
 
 load_dotenv("/home/vire/vire/.env")
 
 filter_labels: dict[str, str | list[str] | bool] | None = {"label":"managed_by=build_scheduler"}
 logfile_dir = os.getenv("GC_LOGDIR")
+redis_url = os.getenv("REDIS_URL")
+db_path = os.getenv("DB_PATH")
 
 if not logfile_dir:
     print(f"'logfile_dir in {Path(__file__).resolve()} is {logfile_dir}.")

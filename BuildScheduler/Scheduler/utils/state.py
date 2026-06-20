@@ -1,5 +1,6 @@
-import os, asyncio, docker
-from pathlib import Path
+import os
+import asyncio
+import docker
 from dotenv import load_dotenv
 
 CONTAINER_REMOVAL_DELAY = 300

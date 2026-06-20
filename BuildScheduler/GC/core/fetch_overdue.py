@@ -1,4 +1,6 @@
-import time, asyncio
+import time
+import asyncio
+
 from logger.scheduler_logger import vire_logger
 from state import filter_labels
 
