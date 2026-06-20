@@ -7,17 +7,18 @@ Functions -
 3. container_create (async, helper)
 """
 
-import time, asyncio
+import asyncio
+import time
 
-from core.stream_redis_log import stream_logs, publish_log_redis
-from schema.errors import ContainerCreationFail, UnsupportedFramework, InstallReqMismatch
-
+from core.stream_redis_log import publish_log_redis, stream_logs
+from schema.errors import ContainerCreationFail, InstallReqMismatch, UnsupportedFramework
 from utils import state
 from utils.adapter import FRAMEWORK_REGISTRY
 from utils.vire_logger import cfn_log
 
+
 # Helper
-def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple[str | None, str | None]:
+def setup_creation(repo_name: str, framework: str, package_manager: str) -> tuple[str | None, str | None]:
     """
     Args
 
@@ -61,8 +62,9 @@ def setup_creation(repo_name: str, framework: str, package_manager: str)-> tuple
         cfn_log("critical", "[worker setup_creation] Unable to initialize setup. Details: %s", e)
         raise e
 
+
 # Helper called by 'container_create'.
-def sync_docker_run(job_uuid: str)-> None:
+def sync_docker_run(job_uuid: str) -> None:
     """
     Run a docker container synchronously.
 
@@ -83,34 +85,36 @@ def sync_docker_run(job_uuid: str)-> None:
             raise ContainerCreationFail(f"{'Image' if not image else 'cmd'} Cannot be none.")
         cmd = ["sh", "-c", cmd_body]
         client.containers.run(
-            name = job_uuid,
-            image = image, command = cmd,
-            mem_limit = '400m', cpu_quota = 50000, cpu_period = 100000,
-            detach = True,
-            labels = {
-                "managed_by":"build_scheduler",
-                "expires_at": str(expires_at)
-            },
+            name=job_uuid,
+            image=image,
+            command=cmd,
+            mem_limit="400m",
+            cpu_quota=50000,
+            cpu_period=100000,
+            detach=True,
+            labels={"managed_by": "build_scheduler", "expires_at": str(expires_at)},
         )
     except InstallReqMismatch as e:
         raise ContainerCreationFail(str(e))
     except Exception as e:
-        cfn_log("critical", "[sync_docker_run] Job '%s' was unsuccessful. Details: %s", job_uuid, e )
+        cfn_log("critical", "[sync_docker_run] Job '%s' was unsuccessful. Details: %s", job_uuid, e)
         raise ContainerCreationFail(f"Container spin up unsucessful. Details: {e}") from e
 
 
-async def container_create(job_uuid: str)-> None:
+async def container_create(job_uuid: str) -> None:
     """
     Creates a container task and streams the container logs.
-    
+
     Catches:
         'ContainerCreationFail', 'Exception'.
     """
     try:
         container_task = asyncio.to_thread(sync_docker_run, job_uuid)
         await container_task
-        await asyncio.to_thread(stream_logs,job_uuid)
+        await asyncio.to_thread(stream_logs, job_uuid)
     except ContainerCreationFail as e:
         await asyncio.to_thread(publish_log_redis, str(e))
     except Exception as e:
-        cfn_log("critical", "[container_create] Container creation for job '%s' was unsucessful. Details: %s", job_uuid, e)
+        cfn_log(
+            "critical", "[container_create] Container creation for job '%s' was unsucessful. Details: %s", job_uuid, e
+        )

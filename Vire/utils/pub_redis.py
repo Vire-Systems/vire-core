@@ -4,7 +4,7 @@ This module (pub_redis) is responsible for providing an async redis publisher fu
 
 import redis.asyncio as redis
 from Vire.utils import state
-from Vire.utils.logger import vire_logger
+from BuildScheduler.shared.scheduler_logger import vire_logger
 
 assert state.redis_url is not None
 client = redis.Redis.from_url(state.redis_url)

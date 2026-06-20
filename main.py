@@ -1,4 +1,5 @@
-import uvicorn, logging
+import uvicorn
+import logging
 from Vire.utils.state import logfile, log_value
 from application import app
 from BuildScheduler.shared.logger_setup import setup_async_logging, stop_async_logging

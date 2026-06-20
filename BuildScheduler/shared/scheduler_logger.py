@@ -6,22 +6,37 @@ Functions -
 """
 
 import logging
+from typing import Literal
 
-async def vire_logger(log_type: str, obj:str, *args)-> None:
-    """log_type levels: [info | warn | error | critical | exit]"""
+from typing_extensions import Callable
+
+async def vire_logger(
+    log_type: Literal["info", "warn", "error", "critical", "exit"],
+    obj:str, *args
+)-> None:
+    """Logging function for Scheduler (shared)"""
     logger = logging.getLogger()
+    l_type = log_type.lower()
+
+    std_logging_objects: dict[str, Callable[..., None]]  = {
+        "info": logger.info,
+        "warn": logger.warning,
+        "exit": logger.critical
+    }
+    
+    special_logging_objects: dict[str, Callable[..., None]] = {
+        "error": logger.error,
+        "critical": logger.critical
+    }
+
+    # Main logic
     try:
-        l_type = log_type.lower()
-        if l_type == 'info':
-            logger.info(obj, *args)
-        elif l_type.lower() == 'warn':
-            logger.warning(obj, *args)
-        elif l_type == 'error':
-            logger.error(obj, *args,exc_info=True ,stack_info=True)
-        elif l_type == 'critical':
-            logger.critical(obj, *args, stack_info=True, exc_info=True)
-        elif l_type == 'exit':
-            logger.critical(obj, *args)
+        if l_type in std_logging_objects.keys():
+            std_logging_objects[l_type](obj, *args)
+
+        elif l_type in special_logging_objects.keys():
+            special_logging_objects[l_type](obj, *args, stack_info=True, exc_info=True)
+
         else:
             logger.warning("[cfn_log] Log type '%s' is not supported by cfn_log.", l_type)
     except Exception as e:

@@ -1,4 +1,3 @@
-import redis
 from utils import state
 from utils.vire_logger import cfn_log
 

@@ -5,7 +5,8 @@ Functions -
     1. send_request
 """
 
-import asyncio, httpx
+import asyncio
+import httpx
 from Vire.errors import errors
 
 MAX_CONCURRENT = 10

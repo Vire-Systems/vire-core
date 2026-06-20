@@ -5,8 +5,9 @@ This is made so that the API layer does not mess with fetching raw data, parsing
 
 import traceback
 
-from BuildScheduler.Scheduler.db.crud import read, update
+from BuildScheduler.Scheduler.db.crud import read
 from BuildScheduler.Scheduler.manage_worker.create_worker import create_worker_process
+from BuildScheduler.shared.scheduler_logger import vire_logger
 
 async def scheduler_create_worker(job_uuid: str)-> None:
     try:
@@ -14,7 +15,7 @@ async def scheduler_create_worker(job_uuid: str)-> None:
         if not job_data:
             print("No worker data") #TODO: change this to raise an error or smtn
             return
-  
+        await vire_logger("info", f"Worker started. Job UUID: {job_uuid}")
         await create_worker_process(job_data)
     except Exception as e:
         traceback.print_exc()

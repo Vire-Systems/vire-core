@@ -4,7 +4,7 @@ import asyncio
 from BuildScheduler.Scheduler.core.dispatch_from_queue import dispatch_queued_job, get_worker_count
 from BuildScheduler.Scheduler.db.crud import read
 from BuildScheduler.Scheduler.utils import state
-from Vire.utils.logger import vire_logger
+from BuildScheduler.shared.scheduler_logger import vire_logger
 
 
 async def scheduler_loop():

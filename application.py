@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from BuildScheduler.Scheduler.db.models import init_db
 from BuildScheduler.Scheduler.scheduler_loop import scheduler_loop
-from Vire.utils.logger import vire_logger
+from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.api.routers import testrouter, build_req
 
 
