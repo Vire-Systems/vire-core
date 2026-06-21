@@ -19,3 +19,6 @@ class PackageManagerException(Exception):
 
 class InvalidOutDir(Exception):
     """Exception for invalid/malicious output dir."""
+
+class UnsupportedFrameworkError(Exception):
+    """Exception for unsupported/invalid frameworks"""

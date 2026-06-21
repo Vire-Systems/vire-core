@@ -10,7 +10,7 @@ import httpx
 from Vire.errors import errors
 
 MAX_CONCURRENT = 10
-TIMEOUT = 3
+TIMEOUT = 5
 MAX_ALIVE = 20
 
 semaphore = asyncio.Semaphore(MAX_ALIVE)

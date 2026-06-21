@@ -3,7 +3,12 @@ import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
+
 load_dotenv("/home/vire/vire/.env")
+
+available_frameworks_str = os.getenv("AVAILABLE_FRAMEWORKS")
+assert available_frameworks_str is not None
+available_frameworks:set[str] =  set(available_frameworks_str.lower().split(','))
 
 redis_url = os.getenv("REDIS_URL") #TODO : Change this URL later
 assert redis_url is not None

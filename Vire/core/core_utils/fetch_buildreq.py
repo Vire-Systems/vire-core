@@ -44,12 +44,13 @@ async def fetch_vire_toml(
         toml_b:bytes = body.content
         toml_str = toml_b.decode(encoding="utf-8")
         return toml_str
+
     except KeyError as KE:
         raise errors.UnsupportedGitProvider(f"The Git provider '{provider}' is not supported yet.") from KE
-    except errors.InvalidBranchError as e:
-        raise e
-    except errors.RepoFileFetchError as e:
-        raise e
+    except errors.InvalidBranchError:
+        raise
+    except errors.RepoFileFetchError:
+        raise
     except Exception:
         raise errors.RepoFileFetchError("While trying to fetch vire.toml, Vire encountered unexpected errors (Internal Error).")
 

@@ -95,8 +95,19 @@ async def main():
     try:
         assert state.job_uuid is not None, "Job UUID is None"
         await container_create(state.job_uuid)
-    finally:
         complete_final_tasks()
+
+    except Exception as e:
+        assert state.job_uuid is not None, "Job_UUID is None"
+        update_job_state(state.job_uuid, "running", "crashed")
+        cfn_log("critical", "Vire faced an unexpected issue while trying to create a worker process. Details: %s", e)
+        publish_log_redis(dedent(
+            """
+            Error: VC-WK-001. Vire faced an unexpected issue while trying to create a worker process.
+
+            If you see this error, Please create an issue on github with a screenshot. This is an internal error.
+            """
+        )) 
 
 
 def init():
@@ -104,8 +115,10 @@ def init():
         load_parser()
         logfile_location = setup_logfile_location(state.job_uuid)
         logging.basicConfig(filename=logfile_location, encoding="utf-8", level=logging.INFO)
+
     except CredentialError as e:
         assert state.job_uuid is not None, "Job UUID is None"
+
         update_job_state(state.job_uuid, "running", "crashed")
         cfn_log("critical", "[worker init()]-> CredentialError. The values provided have invalid None type.")
         publish_log_redis(dedent(

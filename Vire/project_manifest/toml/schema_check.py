@@ -42,15 +42,15 @@ async def check_toml_schema(toml_dict: dict)-> ParsedTOMLObject:
         dependencies_req:bool = project.get("dependencies")
 
         if not framework:
-            output_str += "'framework' cannot be null. "
+            output_str += "'framework' cannot be empty. "
         if not package_manager:
-            output_str += "'package_manager' cannot be none. "
+            output_str += "'package_manager' cannot be empty. "
         if not output_dir:
-            output_str += "output_dir cannot be none. "
+            output_str += "output_dir cannot be empty. "
         if not framework_version:
-            output_str += "framework_version cannot be none. "
+            output_str += "framework_version cannot be empty. "
         if not dependencies_req:
-            output_str += "'dependencies' cannot be none"
+            output_str += "'dependencies' cannot be empty."
 
         if output_str:
             raise InvalidVireToml(output_str)

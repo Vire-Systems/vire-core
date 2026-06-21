@@ -5,12 +5,16 @@ Functions -
     1. validate_vire_toml
 """
 
+from textwrap import dedent
+
+from BuildScheduler.shared.scheduler_logger import vire_logger
+from BuildScheduler.shared.shared_state import lockfile_matrix
 from Vire.project_manifest.toml.errors import config_errors
 from Vire.objects.dataclass_objects.validation_models import TOMLValidationParams, ValidatorContext, ParsedTOMLObject
 from Vire.project_manifest.toml.validator import validate_toml
 from Vire.utils.pub_redis import publish_log_redis
 
-async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PTO: ParsedTOMLObject)-> None:
+async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PTO: ParsedTOMLObject)-> bool | None:
     """
     Validates vire.toml fetched from the user's repo.
 
@@ -21,23 +25,74 @@ async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PT
     """
 
     # Helper inside fn for reducing reused lines
-    async def publish_redis_ln(line, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=TVP.ts)-> None:
+    async def publish_redis_ln(line: str, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=TVP.ts)-> None:
         await publish_log_redis(
             line = f"{ts} : {line}",
             user_uuid=user_uuid, job_uuid=job_uuid
         )
+        await vire_logger("info", f"Error code: '{error_code}' for job_uuid: '{job_uuid}'")
 
     # Main logic
     try:
         await validate_toml(
             lockfile_name=TVP.lockfile_name,
             package_manager=PTO.package_manager,
-            output_dir=PTO.output_dir
+            output_dir=PTO.output_dir,
+            framework=PTO.framework
         )
+        return True
 
     # Error handling
+    except config_errors.UnsupportedFrameworkError as e:
+        await publish_redis_ln(dedent(
+            f"""
+            Error: VC-VD-001. Unable to validate vire.toml.
+
+            Details:
+                Job UUID: {VC.job_uuid}
+                vire.toml: {TVP.common_line}
+                Issue: {str(e)}
+
+            Suggested fixes:
+                1. Upload file in HTML.
+                2. Try other supported frameworks available in docs.
+            """),
+        error_code="VC-VD-021")
+
     except config_errors.PackageManagerException as e:
-        await publish_redis_ln(f"Vire attempted to parse vire.toml from {TVP.common_line} and encountered the following issue: {e}")
+        expected_pm = lockfile_matrix[TVP.lockfile_name] if TVP.lockfile_name else "Unsupported PM"
+        await publish_redis_ln(dedent(
+            f"""
+            Error: VC-VD-022. PM and lockfile do not match.
+
+            Job Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+                Fetched from: {TVP.common_line}
+
+            Errors caused by:
+                Lockfile: {TVP.lockfile_name} (from {VC.remote_reponame} repository.)
+                Expected PM: {expected_pm} (Based on lockfile.)
+                Provided PM: {PTO.package_manager} (from vire.toml)
+                Issue: {str(e)}
+
+            Suggested fixes:
+                1. Run npm install and commit the lockfile and delete the old one.
+            """), "VC-VD-022")
 
     except config_errors.InvalidOutDir as e:
-        await publish_redis_ln(f"The output_dir ('{PTO.output_dir}') fetched from {TVP.common_line} is invalid. Details : {e}")
+        await publish_redis_ln(dedent(
+            f"""
+            Error: VC-VD-023. Invalid symbols for output directory.
+
+            Job Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+                Fetched from: {TVP.common_line}
+
+            Errors caused by:
+                Output Dir: {PTO.output_dir}
+                Issues: {str(e)}
+            """), "VC-VD-023")

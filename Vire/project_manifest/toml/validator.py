@@ -9,6 +9,7 @@ Functions-
 
 import re
 import json
+from Vire.utils.state import available_frameworks
 from Vire.project_manifest.toml.errors import config_errors
 from BuildScheduler.shared.shared_state import package_managers, lockfile_matrix
 
@@ -48,7 +49,7 @@ async def validate_package_json(package_json_str: str)-> bool:
 
 
 # TOML
-async def validate_toml(lockfile_name: str | None, package_manager: str, output_dir: str)-> None:
+async def validate_toml(lockfile_name: str | None, package_manager: str, output_dir: str, framework: str)-> None:
     """
     Validates the vire.toml file.
 
@@ -61,13 +62,11 @@ async def validate_toml(lockfile_name: str | None, package_manager: str, output_
     'InvalidOutDir' -
         1. If output_dir provided fails regex check (r[a-zA-Z0-9_]+).
 
-    Error class locations -
-
-    1. 'PackageManagerException' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.PackageManagerException
-    2. 'InvalidOutDir' - BuildScheduler.Scheduler.project_manifest.toml.errors.config_errors.InvalidOutDir
+    'UnsupportedFrameworkError'
+        1. If framework is not in FRAMEWORK_REGISTRY's keys.
     """
-    if package_manager not in package_managers:
-        raise config_errors.PackageManagerException(f"The package manager provided ({package_manager}) isn't supported by Vire yet.")
+    if framework.lower() not in available_frameworks:
+        raise config_errors.UnsupportedFrameworkError(f"The framework provided ({framework}) is either unsupported or invalid.")
 
     if lockfile_name:
         if lockfile_matrix.get(lockfile_name) != package_manager:

@@ -6,6 +6,10 @@ Functions -
     1. fetch_and_parse_toml
 """
 
+from textwrap import dedent
+from tomllib import TOMLDecodeError
+
+from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.core.core_utils.fetch_buildreq import fetch_vire_toml
 from Vire.project_manifest.toml.parse_toml import parse_toml
 from Vire.project_manifest.toml.errors import config_errors
@@ -13,7 +17,7 @@ from Vire.errors import errors
 from Vire.utils.pub_redis import publish_log_redis
 from Vire.objects.dataclass_objects.validation_models import ValidatorContext, ParsedTOMLObject
 
-async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject:
+async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject | None:
     """
     This function fetches and parses vire.toml.
     
@@ -25,11 +29,12 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
     """
 
     #Helper inside the fn for publishing log lines to redis.
-    async def publish_redis_ln(line, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=ts)-> None:
+    async def publish_redis_ln(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=ts)-> None:
         await publish_log_redis(
             line = f"{ts} : {line}",
             user_uuid=user_uuid, job_uuid=job_uuid
         )
+        await vire_logger("info", f"Error code: '{error_code}' for job uuid: {job_uuid}")
 
     try:
         vire_toml_str = await fetch_vire_toml(
@@ -39,14 +44,74 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
 
         return verified_toml
 
+    except TOMLDecodeError as e:
+        await publish_redis_ln(dedent(
+            f"""
+            Error: VC-VD-003. Unable to validate vire.toml.
+
+            Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+                Fetched from: Root Directory of {VC.branch}, {VC.remote_reponame}
+                Issue: {str(e)}
+
+            Suggested fixes:
+                1. Use official docs' vire.toml as reference.
+            """), "VC-VD-003")
+
     except errors.InvalidBranchError:
-        await publish_redis_ln(f"The branch provided ({VC.branch}) does not contain vire.toml. Vire tried to fetch vire.toml from in Repo's root but found nothing.)")
+        await publish_redis_ln(dedent(
+            f"""
+            Error: VC-VD-002. Unable to fetch vire.toml.
+
+            Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+                Fetched from: Root Directory of {VC.branch}, {VC.remote_reponame}
+
+            Possible reasons it can happen:
+                1. Branch '{VC.branch}' was deleted right after triggering the Vire webhook.
+            """), "VC-VD-002")
     
     except config_errors.InvalidVireToml as e:
-        await publish_redis_ln(f"Parsing error for vire.toml fetched from  failed. Details for the error: {e}")
+        await publish_redis_ln(dedent(
+            f"""
+            Error: VC-VD-003. Unable to validate vire.toml.
+
+            Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+                Fetched from: Root Directory of {VC.branch}, {VC.remote_reponame}
+                Issue: {str(e)}
+
+            Suggested fixes:
+                1. Use official docs' vire.toml as reference.
+            """), "VC-VD-003")
     
     except errors.RepoFileFetchError as e:
-        await publish_redis_ln(e)
+        await publish_redis_ln(dedent(
+            f"""
+            Error: VC-VD-004. Unable to fetch files from the repository '{VC.remote_reponame}.'
+
+            Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+                Issue: {e}
+            """), "VC-VD-004")
 
     except errors.UnsupportedGitProvider as e:
-        await publish_redis_ln(e)
+        await publish_redis_ln(dedent(
+            f"""
+            Error: VC-VD-005. The git provider '{VC.provider}' is not supported.
+
+            Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+                Issue: {e}
+            """
+        ), "VC-VD-005")
