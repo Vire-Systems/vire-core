@@ -5,6 +5,6 @@ __pycache__
 .zed/
 test.py
 test/
-.pylintrc
+ruff.toml
 stuff_to_do.txt
 ZExamples/

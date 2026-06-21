@@ -12,7 +12,11 @@ client = redis.Redis.from_url("redis://127.0.0.1:6379")
 
 pubsub = client.pubsub()
 
-channel_name = "logs:sparrow/professional_build3"
+channel = input("What channel? (logs, data, etc): ")
+user = input("User UUID: ")
+job = input("Job UUID: ")
+
+channel_name = f"{channel}:{user}/{job}"
 
 pubsub.subscribe(channel_name)
 print("Subscribed to ", channel_name)
@@ -27,5 +31,5 @@ while True:
     except redis.TimeoutError:
         continue
     except KeyboardInterrupt:
-        print("Shutting down")
+        print("\nShutting down")
         break

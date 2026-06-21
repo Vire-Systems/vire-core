@@ -6,8 +6,6 @@ from BuildScheduler.shared.logger_setup import setup_async_logging, stop_async_l
 
 logger = logging.getLogger(__name__)
 
-#TODO: Move logging to application.py
-
 if __name__=="__main__":
     try:
         setup_async_logging(logfile, log_value)

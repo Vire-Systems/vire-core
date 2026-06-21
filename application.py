@@ -1,3 +1,8 @@
+"""
+The module used in main.py
+This provides the fastapi app with the lifespan.
+"""
+
 import asyncio
 from contextlib import asynccontextmanager
 
@@ -10,6 +15,7 @@ from Vire.api.routers import testrouter, build_req
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
+    """FastAPI lifespan CM"""
     print("INFO:     [Vire Core] Starting up.")
     await vire_logger("info", "[Vire core] start up.")
     tasks = []
