@@ -1,3 +1,4 @@
+"""The module consisting of the scheduler loop function"""
 
 import asyncio
 
@@ -8,6 +9,7 @@ from BuildScheduler.shared.scheduler_logger import vire_logger
 
 
 async def scheduler_loop():
+    """The main scheduler loop that dispatches queued jobs."""
     await vire_logger("info", "Scheduler loop starting up.")
     try:
         while True:

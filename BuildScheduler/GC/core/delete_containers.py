@@ -75,7 +75,7 @@ async def batch_remove(overdue_list: list[Container] | None)-> None:
     if not overdue_list:
         return
     try:
-        await update_job_status(return_job_uuids(overdue_list))
+        await update_job_status(return_job_uuids(overdue_list), error_code = "VC-GC-001 ")
         tasks = [asyncio.create_task(remove_single_container(c)) for c in overdue_list]
         await asyncio.gather(*tasks, return_exceptions=True)
     except Exception as e:

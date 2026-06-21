@@ -17,16 +17,22 @@ async def get_user_uuid(job_uuid: str)-> str | None:
 
 async def update_job_status(
     job_uuids: list[str],
-    status="terminated"
+    status="terminated",
+    error_code: str | None = None
 )-> None:
     async with aiosqlite.connect(db_path) as db:
         placeholders = ','.join('?' for _ in job_uuids)
-        query = f"UPDATE BuildState SET status=? WHERE job_uuid IN ({placeholders})"
 
         # Pragmas
         await db.execute("PRAGMA journal_mode=WAL")
         await db.execute("PRAGMA busy_timeout=5000")
 
         #Main logic
-        await db.execute(query, (status,tuple(job_uuids)))
+        if not error_code:
+            query = f"UPDATE BuildState SET status=? WHERE job_uuid IN ({placeholders})"
+            await db.execute(query, (status, tuple(job_uuids)))
+        if error_code:
+            query = f"UPDATE BuildState SET status=?, error=? WHERE job_uuid IN ({placeholders})"
+            await db.execute(query, (status, error_code, tuple(job_uuids)))
+
         await db.commit()

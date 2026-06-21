@@ -1,3 +1,5 @@
+"""The utility module used for dispatching queued jobs."""
+
 import docker
 from typing import Literal
 import asyncio
@@ -9,6 +11,12 @@ from BuildScheduler.Scheduler.utils import queues_locks
 client = docker.from_env()
 
 async def get_worker_count(fetch_all = False)-> int:
+    """
+    Fetch active worker count from docker API.
+
+    Args:
+        1. fetch_all - Returns all containers including the dead / finished ones.
+    """
     containers = await asyncio.to_thread(client.containers.list, 
         all=fetch_all,
         filters={"label":"managed_by=build_scheduler"},
@@ -16,7 +24,8 @@ async def get_worker_count(fetch_all = False)-> int:
     return len(containers)
 
 
-async def launch_workers(job_uuids: list)-> None:
+async def launch_workers(job_uuids: list[str])-> None:
+    """Launch the same number of workers as the length of job_uuids."""
     task_list: list[asyncio.Task[None]] = []
 
     for job_uuid in job_uuids:
@@ -24,7 +33,10 @@ async def launch_workers(job_uuids: list)-> None:
     await asyncio.gather(*task_list)
 
 
-async def dispatch_queued_job(available_slots)-> Literal["queued", "started"] | None:
+async def dispatch_queued_job(available_slots: int)-> Literal["queued", "started"] | None:
+    """
+    Dispatch the number of jobs (available_slots) which are queued in SQLite DB.
+    """
     if available_slots <= 0:
         return
 
