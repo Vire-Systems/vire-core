@@ -29,7 +29,7 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
     """
 
     #Helper inside the fn for publishing log lines to redis.
-    async def publish_redis_ln(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=ts)-> None:
+    async def publish_job_log(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=ts)-> None:
         await publish_log_redis(
             line = f"{ts} : {line}",
             user_uuid=user_uuid, job_uuid=job_uuid
@@ -45,7 +45,7 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
         return verified_toml
 
     except TOMLDecodeError as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-003. Unable to validate vire.toml.
 
@@ -61,7 +61,7 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
             """), "VC-VD-003")
 
     except errors.InvalidBranchError:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-002. Unable to fetch vire.toml.
 
@@ -76,7 +76,7 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
             """), "VC-VD-002")
     
     except config_errors.InvalidVireToml as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-003. Unable to validate vire.toml.
 
@@ -92,7 +92,7 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
             """), "VC-VD-003")
     
     except errors.RepoFileFetchError as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-004. Unable to fetch files from the repository '{VC.remote_reponame}.'
 
@@ -104,7 +104,7 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
             """), "VC-VD-004")
 
     except errors.UnsupportedGitProvider as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-005. The git provider '{VC.provider}' is not supported.
 

@@ -42,8 +42,8 @@ async def validate_package_json(package_json_str: str)-> bool:
             )
         return True
 
-    except config_errors.InvalidPackageJson as e:
-        raise e
+    except config_errors.InvalidPackageJson:
+        raise
     except Exception as e:
         raise config_errors.InvalidPackageJson(f"Encountered unexpected errors while attempting to parse package.json. Details: {type(e).__name__}") from e
 

@@ -1,5 +1,8 @@
 
 
+from textwrap import dedent
+
+from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.core.core_utils.fetch_buildreq import fetch_package_json
 from Vire.project_manifest.toml.validator import validate_package_json
 from Vire.utils.pub_redis import publish_log_redis
@@ -22,11 +25,12 @@ async def fetch_and_validate_pkgjson(
     """
 
     #helper to publish line to redis pubsub
-    async def publish_redis_ln(line, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=PJVP.ts)-> None:
+    async def publish_job_log(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=PJVP.ts)-> None:
         await publish_log_redis(
             line = f"{ts} : {line}",
             user_uuid=user_uuid, job_uuid=job_uuid
         )
+        await vire_logger("info", f"Error code: '{error_code}' for job_uuid: '{job_uuid}'")
 
     # Main logic
     try:
@@ -36,13 +40,63 @@ async def fetch_and_validate_pkgjson(
         await validate_package_json(package_json_str)
 
     except config_errors.InvalidPackageJson as e:
-        await publish_redis_ln(f"The package.json in {PJVP.common_line} is invalid. Vire cannot run the build command with this package.json. Details : {e}")
+        await publish_job_log(dedent(
+            f"""
+            Error: VC-VD-031. Invalid 'package.json'.
+
+            Job Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+
+            Errors caused by:
+                Issue: {e}
+
+            The scripts in 'package.json' cannot be accepted by Vire. 
+            """), "VC-VD-031")
 
     except errors.InvalidBranchError:
-        await publish_redis_ln(f"The branch provided ({VC.branch}) does not contain a package.json. Vire tried to fetch package.json from {PJVP.common_line} but found nothing.)")
+        await publish_job_log(dedent(
+            f"""
+            Error: VC-VD-032. Branch does not exist.
+
+            Job Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+
+            Suggested fixes:
+                1. In the case of branch deletion, retry.
+
+            If branch exists and you see this error, create an issue on GitHub regarding this. (Internal parsing error)
+            """), "VC-VD-032")
 
     except errors.RepoFileFetchError as e:
-        await publish_redis_ln(f"Vire failed in fetching package.json from {PJVP.common_line}. Details: {e}")
+        await publish_job_log(dedent(
+            f"""
+            Error: VC-VD-033. File fetch from remote failed.
+
+            Job Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+
+            Error details - {e}
+
+            Suggested Fixes:
+                1. Check {VC.provider.capitalize()}'s status
+                2. Could be caused by the package.json file being malformed.
+                3. Outdated Commit SHA because something was pushed right after the build started (1-3s delay between pushes.)
+            """), "VC-VD-033")
 
     except errors.UnsupportedGitProvider as e:
-        await publish_redis_ln(f"Vire encountered an issue while fetching and validating package.json from {PJVP.common_line}. Details: {e}")
+        await publish_job_log(dedent(
+            f"""
+            Error: VC-VD-034. Unsupported git provider {VC.provider.capitalize()}.
+
+            Details:
+                Job UUID: {VC.job_uuid}
+                Commit SHA: {VC.commit_id}
+                Branch Name: {VC.branch}
+                Issue: {e}
+            """), "VC-VD-034")

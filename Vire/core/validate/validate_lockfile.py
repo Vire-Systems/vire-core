@@ -33,7 +33,7 @@ async def fetch_and_validate_lockfile(
     """
     
     #Helper inside the fn for publishing log lines to redis.
-    async def publish_redis_ln(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=ts)-> None:
+    async def publish_job_log(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=ts)-> None:
         await publish_log_redis(
             line = f"{ts} : {line}",
             user_uuid=user_uuid, job_uuid=job_uuid
@@ -61,7 +61,7 @@ async def fetch_and_validate_lockfile(
 
     # Exception handling
     except config_errors.PackageManagerException as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-015. Unsupported package manager.
 
@@ -74,7 +74,7 @@ async def fetch_and_validate_lockfile(
         ), "VC-VD-015")
 
     except errors.EmptyLockfile as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-012. Empty lockfile.
 
@@ -87,7 +87,7 @@ async def fetch_and_validate_lockfile(
             """), "VC-VD-012")
 
     except KeyError:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-011. Check docs for details.
 
@@ -102,7 +102,7 @@ async def fetch_and_validate_lockfile(
             """), "VC-VD-011")
 
     except errors.NoLockfile:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-013. No lockfile.
 
@@ -117,7 +117,7 @@ async def fetch_and_validate_lockfile(
             """,), "VC-VD-013")
 
     except errors.RepoFileFetchError as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-014. Check docs for error definition.
 

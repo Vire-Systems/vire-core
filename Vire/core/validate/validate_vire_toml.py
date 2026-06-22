@@ -25,7 +25,7 @@ async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PT
     """
 
     # Helper inside fn for reducing reused lines
-    async def publish_redis_ln(line: str, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=TVP.ts)-> None:
+    async def publish_job_log(line: str, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=TVP.ts)-> None:
         await publish_log_redis(
             line = f"{ts} : {line}",
             user_uuid=user_uuid, job_uuid=job_uuid
@@ -44,7 +44,7 @@ async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PT
 
     # Error handling
     except config_errors.UnsupportedFrameworkError as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-001. Unable to validate vire.toml.
 
@@ -61,7 +61,7 @@ async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PT
 
     except config_errors.PackageManagerException as e:
         expected_pm = lockfile_matrix[TVP.lockfile_name] if TVP.lockfile_name else "Unsupported PM"
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-022. PM and lockfile do not match.
 
@@ -82,7 +82,7 @@ async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PT
             """), "VC-VD-022")
 
     except config_errors.InvalidOutDir as e:
-        await publish_redis_ln(dedent(
+        await publish_job_log(dedent(
             f"""
             Error: VC-VD-023. Invalid symbols for output directory.
 
