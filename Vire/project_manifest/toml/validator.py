@@ -11,7 +11,7 @@ import re
 import json
 from Vire.utils.state import available_frameworks
 from Vire.project_manifest.toml.errors import config_errors
-from BuildScheduler.shared.shared_state import package_managers, lockfile_matrix
+from BuildScheduler.shared.shared_state import lockfile_matrix
 
 # frameworks vite, astro, vue, react, sveltekit, nextjs, nuxtjs, 11ty
 # pms: npm, pnpm, yarn, bun

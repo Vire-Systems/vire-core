@@ -70,6 +70,8 @@ async def fetch_and_validate_lockfile(
                 Commit SHA: {VC.commit_id}
                 Branch Name: {VC.branch}
                 PM provided: {LVP.package_manager}
+
+            Error details: {e}
             """
         ), "VC-VD-015")
 
