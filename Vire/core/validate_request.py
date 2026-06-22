@@ -96,7 +96,8 @@ async def validate_details(VC: ValidatorContext)-> ParsedTOMLObject | None:
             ts=ts()
         )
 
-        await fetch_and_validate_pkgjson(VC=VC, PJVP=validate_pkgjson_obj)
+        if not await fetch_and_validate_pkgjson(VC=VC, PJVP=validate_pkgjson_obj):
+            return
 
         return toml_data
     except Exception:

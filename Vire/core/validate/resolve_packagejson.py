@@ -15,7 +15,7 @@ from Vire.objects.dataclass_objects.validation_models import ValidatorContext, P
 async def fetch_and_validate_pkgjson(
     VC: ValidatorContext,
     PJVP: PkgJSONValidationParams
-)-> None:
+)-> bool | None:
     """
     Fetches and validates the package.json from user's repo,branch.
 
@@ -38,6 +38,7 @@ async def fetch_and_validate_pkgjson(
             provider=VC.provider, remote_user=VC.remote_user, remote_reponame=VC.remote_reponame, branch=VC.branch
         )
         await validate_package_json(package_json_str)
+        return True
 
     except config_errors.InvalidPackageJson as e:
         await publish_job_log(dedent(
