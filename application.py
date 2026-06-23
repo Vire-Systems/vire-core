@@ -11,6 +11,7 @@ from BuildScheduler.Scheduler.db.models import init_db
 from BuildScheduler.Scheduler.scheduler_loop import scheduler_loop
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.api.routers import testrouter, build_req
+from Vire.utils import async_requests
 
 
 @asynccontextmanager
@@ -26,6 +27,11 @@ async def lifespan(app:FastAPI):
     finally:
         print("INFO:     [Vire Core] Shutting down.")
         await vire_logger("info", "[Vire Core] shutting down.")
+        if not async_requests.client:
+            print("INFO:     [async req setup] No client found. Ignoring aclose()...")
+        else:
+            await async_requests.client.aclose()
+            print("INFO:     [async req setup] client pool closed.")
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)

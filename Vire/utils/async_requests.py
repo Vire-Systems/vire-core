@@ -9,9 +9,11 @@ import asyncio
 import httpx
 from Vire.errors import errors
 
-MAX_CONCURRENT = 10
+MAX_CONCURRENT = 50
 TIMEOUT = 5
-MAX_ALIVE = 20
+MAX_ALIVE = 50
+
+client: httpx.AsyncClient | None = None
 
 semaphore = asyncio.Semaphore(MAX_ALIVE)
 
@@ -26,7 +28,7 @@ async def _send_request_helper(client: httpx.AsyncClient, url: str)-> httpx.Resp
     """Helper for send_request."""
     async with semaphore:
         try:
-            response = await client.get(url, timeout= TIMEOUT)
+            response = await client.get(url, timeout=timeout)
             response.raise_for_status()
             return response
         except httpx.HTTPStatusError as e:
@@ -36,6 +38,7 @@ async def _send_request_helper(client: httpx.AsyncClient, url: str)-> httpx.Resp
             raise errors.RepoFileFetchError(f"Fetching file (raw url: {url}) failed. Vire faced unexpected errors while fetching (Internal Error).")
 
 async def send_request(url: str)-> httpx.Response:
+    global client
     """
     Async implementation for requests (using httpx). Performs a GET request on the specified URL.
     
@@ -48,5 +51,5 @@ async def send_request(url: str)-> httpx.Response:
         client - httpx.AsyncClient, an asynchronous HTTP client with connection pooling, HTTP/2, redirects, cookie persistence, etc.
         url - The url to perform a GET request on.
     """
-    async with httpx.AsyncClient(limits=limits) as client:
-        return await _send_request_helper(client, url)
+    client = httpx.AsyncClient(limits=limits)
+    return await _send_request_helper(client, url)
