@@ -11,7 +11,7 @@ from BuildScheduler.shared.scheduler_logger import vire_logger
 from BuildScheduler.shared.shared_state import package_managers
 from Vire.errors import errors
 from Vire.objects.dataclass_objects.validation_models import LockfileValidationParams, ValidatorContext
-from Vire.project_manifest.toml.errors import config_errors
+from Vire.project_manifest.errors import config_errors
 from Vire.utils.pub_redis import publish_log_redis
 from Vire.core.core_utils.fetch_lockfile import fetch_lockfile_name
 

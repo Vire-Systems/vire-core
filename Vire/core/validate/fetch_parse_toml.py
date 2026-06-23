@@ -11,8 +11,8 @@ from tomllib import TOMLDecodeError
 
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.core.core_utils.fetch_buildreq import fetch_vire_toml
-from Vire.project_manifest.toml.parse_toml import parse_toml
-from Vire.project_manifest.toml.errors import config_errors
+from Vire.project_manifest.parse_toml import parse_toml
+from Vire.project_manifest.errors import config_errors
 from Vire.errors import errors
 from Vire.utils.pub_redis import publish_log_redis
 from Vire.objects.dataclass_objects.validation_models import ValidatorContext, ParsedTOMLObject

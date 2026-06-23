@@ -9,9 +9,9 @@ from textwrap import dedent
 
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from BuildScheduler.shared.shared_state import lockfile_matrix
-from Vire.project_manifest.toml.errors import config_errors
+from Vire.project_manifest.errors import config_errors
 from Vire.objects.dataclass_objects.validation_models import TOMLValidationParams, ValidatorContext, ParsedTOMLObject
-from Vire.project_manifest.toml.validator import validate_toml
+from Vire.project_manifest.validator import validate_toml
 from Vire.utils.pub_redis import publish_log_redis
 
 async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PTO: ParsedTOMLObject)-> bool | None:
