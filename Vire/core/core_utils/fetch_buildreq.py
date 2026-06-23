@@ -10,8 +10,6 @@ from Vire.objects.git_provider_adapter import PROVIDER_REGISTRY
 from Vire.errors import errors
 from Vire.utils.async_requests import send_request
 
-#TODO: Requests is blocking, use an async version.
-
 
 # TOML fetch
 async def fetch_vire_toml(

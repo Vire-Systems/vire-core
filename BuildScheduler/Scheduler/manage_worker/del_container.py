@@ -58,7 +58,6 @@ async def delayed_delete_helper(job_uuid: str)-> None:
             await vire_logger("info",
                 "[Scheduler delayed_delete_helper] Container process '%s' has been auto deleted. Task exceeded 5m limit.", job_uuid
             )
-            #TODO: Add a request to mw. body = {"error":"Status: Build failed. Exit code 1. Reason: Task exceeded the 5 minute limit."}
 
     except NotFound:
         pass

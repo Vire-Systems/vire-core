@@ -43,7 +43,7 @@ def complete_final_tasks():
             assert worker_output_dir is not None
 
             path_to_tar = os.path.join(worker_output_dir, f"{state.job_uuid}.tar")
-            with open(path_to_tar, "wb") as tar_file:  # TODO: Change this path
+            with open(path_to_tar, "wb") as tar_file:
                 for chunk in stream:
                     tar_file.write(chunk)
 

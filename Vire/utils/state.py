@@ -10,7 +10,7 @@ available_frameworks_str = os.getenv("AVAILABLE_FRAMEWORKS")
 assert available_frameworks_str is not None
 available_frameworks:set[str] =  set(available_frameworks_str.lower().split(','))
 
-redis_url = os.getenv("REDIS_URL") #TODO : Change this URL later
+redis_url = os.getenv("REDIS_URL")
 assert redis_url is not None
 logfile_dir = os.getenv("CORE_LOGDIR")
 

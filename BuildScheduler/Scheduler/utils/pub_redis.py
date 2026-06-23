@@ -1,6 +1,6 @@
 import logging
 
-import redis
+import redis.asyncio as redis
 from Vire.utils import state
 
 assert state.redis_url is not None
