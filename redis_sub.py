@@ -29,7 +29,7 @@ while True:
                 
                 if payload:
                     log_line = payload.decode("utf-8") if isinstance(payload, bytes) else payload
-                    print(' '.join(log_line.split()[1::]), flush=True)  # Or forward it where it needs to go
+                    print(log_line, flush=True)  # Or forward it where it needs to go
                 
                 last_id = msg_id  # Advance offset to avoid duplicate reads
 

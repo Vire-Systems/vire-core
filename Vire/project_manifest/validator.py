@@ -32,13 +32,13 @@ async def validate_package_json(package_json_str: str)-> bool:
     """
     try:
         package_json = json.loads(package_json_str)
-        blocked_keys = {"preinstall", "postinstall", "install", "prepare", "prepublish"}
+        blocked_keys = {"start","preinstall", "postinstall", "install", "prepare", "prepublish"}
         scripts = package_json.get("scripts", {})
         found_keys = [key for key in blocked_keys if key in scripts]
 
         if found_keys:
             raise config_errors.InvalidPackageJson(
-                f"The following keys cannot be present in package.json. The invalid keys: {tuple(key for key in found_keys)}"
+                f"The following keys cannot be present in package.json. The invalid keys: {list(key for key in found_keys)}"
             )
         return True
 
