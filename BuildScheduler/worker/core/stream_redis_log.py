@@ -8,7 +8,8 @@ client = state.client
 # Helper called by 'stream_logs'
 def publish_log_redis(line: str)-> None:
     try:
-        r.publish(f"logs:{state.user_uuid}/{state.job_uuid}", line)
+        data = {"payload": line}
+        r.xadd(f"logs:{state.user_uuid}/{state.job_uuid}", data) # type: ignore[reportArgumentType]
     except Exception as e:
         cfn_log("critical", "[publish_log_redis] Unable to publish logs. Details: %s", e)
 

@@ -13,6 +13,7 @@ from docker.models.containers import Container
 from logger.logger_setup import setup_async_logging, stop_async_logging
 from logger.scheduler_logger import sync_vire_logger, vire_logger
 from state import log_value, logfile_dir
+from logger.pub_redis import client as r
 
 client = docker.from_env()
 logger = logging.getLogger(__name__)
@@ -30,8 +31,12 @@ async def gc_core_loop():
             sync_vire_logger("info", "GC starting.")
             overdue_containers: list[Container] | None = await get_containers_overdue(client)
             await batch_remove(overdue_containers)
+
         except Exception as e:
             await vire_logger("critical", "[GC gc_core_loop] Unable to collect. Details: %s", e)
+
+        finally:
+            await r.aclose()
         await asyncio.sleep(30)
 
 

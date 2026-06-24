@@ -1,35 +1,41 @@
-"""
-Note: This is NOT permanent. It is a means to view logs sent by the core.
-
-redis_sub.py -
-
-A redis subscriber (Blocking) to observe logs. Run as a separate process (Not in program).
-"""
-
+import asyncio
+import time
 import redis
 
-client = redis.Redis.from_url("redis://127.0.0.1:6379")
+r = redis.Redis.from_url("redis://127.0.0.1:6379")
 
-pubsub = client.pubsub()
+# Setup stream name and starting point
+user_uuid = input("USER UUID: ")
+job_uuid = input("Job UUID: ")
+stream = f"logs:{user_uuid}/{job_uuid}"
+last_id = "0-0"  # Read from the beginning. Use "$" to tail only new logs instead.
 
-channel = input("What channel? (logs, data, etc): ")
-user = input("User UUID: ")
-job = input("Job UUID: ")
+print(f"Streaming logs from {stream}...")
 
-channel_name = f"{channel}:{user}/{job}"
-
-pubsub.subscribe(channel_name)
-print("Subscribed to ", channel_name)
-
+# Continuous reader loop
 while True:
     try:
-        for message in pubsub.listen():
-            if message["type"] == "message":
-                channel = message["channel"]
-                data:bytes = message["data"]
-                print(f"[{channel_name}] Received: {data.decode()}\n")
-    except redis.TimeoutError:
-        continue
-    except KeyboardInterrupt:
-        print("\nShutting down")
+        # Read available blocks
+        response = r.xread({stream: last_id}, count=100, block=1000)
+        
+        if not response:
+            time.sleep(1)
+            continue
+
+        for stream_name, messages in response:
+            for msg_id, data in messages:
+                # Handle potential raw byte keys/values from redis
+                payload = data.get(b"payload" if b"payload" in data else "payload")
+                
+                if payload:
+                    log_line = payload.decode("utf-8") if isinstance(payload, bytes) else payload
+                    print(' '.join(log_line.split()[1::]), flush=True)  # Or forward it where it needs to go
+                
+                last_id = msg_id  # Advance offset to avoid duplicate reads
+
+    except asyncio.CancelledError:
+        print("Reader stopped.")
         break
+    except Exception as e:
+        print(f"Stream error: {e}")
+        time.sleep(1)

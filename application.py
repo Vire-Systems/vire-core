@@ -12,6 +12,7 @@ from BuildScheduler.Scheduler.scheduler_loop import scheduler_loop
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.api.routers import testrouter, build_req
 from Vire.utils import async_requests
+from BuildScheduler.shared.pub_redis import r
 
 
 @asynccontextmanager
@@ -32,6 +33,8 @@ async def lifespan(app:FastAPI):
         else:
             await async_requests.client.aclose()
             print("INFO:     [async req setup] client pool closed.")
+        await r.aclose()
+        print("INFO:     [pub_redis] shared client closed.")
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)

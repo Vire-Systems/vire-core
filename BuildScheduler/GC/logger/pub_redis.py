@@ -12,8 +12,8 @@ client = redis.Redis.from_url(redis_url)
 async def publish_log_redis(line: str, user_uuid: str ,job_uuid: str)-> None:
     """Publishes a single line to the channel 'logs:<user_uuid>/<job_uuid>'."""
     try:
-        await client.publish(f"logs:{user_uuid}/{job_uuid}", line)
+        stream = f"logs:{user_uuid}/{job_uuid}"
+        data = {"payload": line}
+        await client.xadd(stream, data, maxlen=1000, approximate=True) # type: ignore[reportArgumentType]
     except Exception as e:
-        await vire_logger("critical", "[Core publish_log_redis] Unable to publish logs. Details: %s", e)
-    finally:
-        await client.aclose()
+            await vire_logger("critical", "[Core publish_log_redis] Unable to publish logs. Details: %s", e)

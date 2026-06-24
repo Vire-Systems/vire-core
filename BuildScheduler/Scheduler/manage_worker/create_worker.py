@@ -13,7 +13,7 @@ from BuildScheduler.Scheduler.dataclass_models.scheduler_dc import WorkerCreatio
 from BuildScheduler.Scheduler.db.crud import update
 from BuildScheduler.Scheduler.errors.db_errors import NoJobStateError
 from BuildScheduler.Scheduler.manage_worker.del_container import delayed_delete
-from BuildScheduler.Scheduler.utils.pub_redis import publish_log_redis
+from BuildScheduler.shared.pub_redis import publish_log_redis
 from BuildScheduler.Scheduler.utils.state import python_bin_path, worker_path
 from BuildScheduler.shared.scheduler_logger import vire_logger
 
@@ -73,7 +73,7 @@ async def create_worker_process(WCP: WorkerCreationParams) -> None:
 
             NOTE: This is an internal error. Contact us if you see this.
             """
-            publish_log_redis(dedent(line), user_uuid=WCP.user_uuid, job_uuid=WCP.job_uuid)
+            await publish_log_redis(dedent(line), user_uuid=WCP.user_uuid, job_uuid=WCP.job_uuid)
             await update.update_job_status(job_uuid=WCP.job_uuid, status_msg="crashed", error_code="VC-SC-001")
             return
 
@@ -98,7 +98,7 @@ async def create_worker_process(WCP: WorkerCreationParams) -> None:
               User UUID: {WCP.user_uuid}
               Commit SHA: {WCP.commit_id}
             """
-            publish_log_redis(dedent(line), user_uuid=WCP.user_uuid, job_uuid=WCP.job_uuid)
+            await publish_log_redis(dedent(line), user_uuid=WCP.user_uuid, job_uuid=WCP.job_uuid)
 
         except Exception as e:
             await vire_logger("critical", "[create_worker] Worker creation failed. Details: %s", e)
@@ -113,6 +113,6 @@ async def create_worker_process(WCP: WorkerCreationParams) -> None:
 
             NOTE: This is an internal error. Contact us if you see this.
             """
-            publish_log_redis(dedent(line), user_uuid=WCP.user_uuid, job_uuid=WCP.job_uuid)
+            await publish_log_redis(dedent(line), user_uuid=WCP.user_uuid, job_uuid=WCP.job_uuid)
 
     await _wk_helper(WCP)

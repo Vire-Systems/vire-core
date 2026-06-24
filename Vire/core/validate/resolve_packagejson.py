@@ -5,7 +5,7 @@ from textwrap import dedent
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.core.core_utils.fetch_buildreq import fetch_package_json
 from Vire.project_manifest.validator import validate_package_json
-from Vire.utils.pub_redis import publish_log_redis
+from BuildScheduler.shared.pub_redis import publish_log_redis
 
 from Vire.errors import errors
 from Vire.project_manifest.errors import config_errors
