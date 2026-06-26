@@ -1,12 +1,8 @@
 import os
 import asyncio
 import docker
-from dotenv import load_dotenv
 
 CONTAINER_REMOVAL_DELAY = 300
-
-load_dotenv("/home/vire/vire/.env")
-
 
 redis_url =  os.getenv("REDIS_URL")
 sqlite_db_path = os.getenv("DB_PATH")

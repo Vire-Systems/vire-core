@@ -1,5 +1,9 @@
 import uvicorn
 import logging
+from dotenv import load_dotenv
+
+load_dotenv("/home/vire/vire/.env")
+
 from Vire.utils.state import logfile, log_value
 from application import app
 from BuildScheduler.shared.logger_setup import setup_async_logging, stop_async_logging

@@ -1,22 +1,22 @@
 import os
 import logging
 from pathlib import Path
-from dotenv import load_dotenv
 
-
-load_dotenv("/home/vire/vire/.env")
-
+# Available frameworks
 available_frameworks_str = os.getenv("AVAILABLE_FRAMEWORKS")
 assert available_frameworks_str is not None
 available_frameworks:set[str] =  set(available_frameworks_str.lower().split(','))
+print(available_frameworks)
 
+# Redis
 redis_url = os.getenv("REDIS_URL")
 assert redis_url is not None
-logfile_dir = os.getenv("CORE_LOGDIR")
 
+# Logfile
+logfile_dir = os.getenv("CORE_LOGDIR")
 if not logfile_dir:
-    print(f"'logfile_dir in {Path(__file__).resolve()} is {logfile_dir}.")
-    
+    print(f"'logfile_dir in {Path(__file__).resolve()} is {logfile_dir}.")    
+
 assert logfile_dir is not None
 
 os.makedirs(logfile_dir, exist_ok=True)

@@ -6,6 +6,9 @@ import asyncio
 import logging
 import os
 from textwrap import dedent
+from dotenv import load_dotenv
+
+load_dotenv("/home/vire/vire/.env")
 
 from resolve_worker_state import update_job_state
 from cli_parser import load_parser
@@ -13,14 +16,11 @@ from core.cleanup_container import remove_container
 from core.create_container_job import container_create
 from core.stream_redis_log import publish_log_redis
 from docker.errors import NotFound
-from dotenv.main import load_dotenv
 from schema.errors import CredentialError
 from utils import state
 from utils.vire_logger import cfn_log
 
 client = state.client
-load_dotenv("/home/vire/vire/.env")
-
 
 def setup_logfile_location(job_uuid):
     """Sets up the logfile directory and locations."""

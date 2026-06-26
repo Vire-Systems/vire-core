@@ -6,6 +6,9 @@ import asyncio
 import docker
 import logging
 import os
+from dotenv import load_dotenv
+
+load_dotenv("/home/vire/vire/.env")
 
 from core.delete_containers import batch_remove
 from core.fetch_overdue import get_containers_overdue

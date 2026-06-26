@@ -1,11 +1,8 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
 import docker
 import redis
-
-load_dotenv("/home/vire/vire/.env")
 
 # State
 job_uuid = None

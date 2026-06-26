@@ -1,9 +1,6 @@
 import logging
 import os
 from pathlib import Path
-from dotenv import load_dotenv
-
-load_dotenv("/home/vire/vire/.env")
 
 filter_labels: dict[str, str | list[str] | bool] | None = {"label":"managed_by=build_scheduler"}
 logfile_dir = os.getenv("GC_LOGDIR")
