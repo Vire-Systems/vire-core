@@ -1,8 +1,9 @@
 """This module is responsible for registering build data and build state with the Database when a build request is sent."""
 
-from BuildScheduler.Scheduler.db.sqlite_orm.crud import create
 from BuildScheduler.Scheduler.db.caching.redis_registry import register_job_with_redis
+from BuildScheduler.Scheduler.db.sqlite_orm.crud import create
 
+from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.core.validate_request import validate_details
 from Vire.models.pydantic_classes import BuildRequestModel
 from Vire.objects.dataclass_objects.validation_models import ValidatorContext
@@ -10,6 +11,7 @@ from Vire.objects.dataclass_objects.validation_models import ValidatorContext
 async def register_build(BRM: BuildRequestModel):
     """Register a build with local SQLite database and redis asynchronously."""
     try:
+        await register_job_with_redis(BRM, "validating")
         validator_context = ValidatorContext(
             job_uuid=BRM.job_uuid,
             user_uuid=BRM.user_uuid,
@@ -21,10 +23,14 @@ async def register_build(BRM: BuildRequestModel):
         )
         validated_toml = await validate_details(VC=validator_context)
         if not validated_toml:
-            return
+            await register_job_with_redis(BRM, "failed")
+            return {"success": False, "Reason": "Server refused the request."}
 
         await create.register_build_data(BRM, validated_toml)
         await create.register_build_state(job_uuid=BRM.job_uuid, user_uuid=BRM.user_uuid, status="queued")
-        await register_job_with_redis(BRM)
-    except Exception as e:
-        print(e)
+        await register_job_with_redis(BRM, "passed")
+        return {"success": True, "Reason": "Server accepted the request."}
+    except Exception:
+        await register_job_with_redis(BRM, "failed")
+        await vire_logger("critical", "Registering with SQLite queue failed.")
+        return {"success": False, "Reason": "Server refused the request."}

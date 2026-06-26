@@ -1,3 +1,10 @@
+"""
+Commonly used function moved to a module to avoid reuse.
+
+Functions:
+    1. publish_job_log
+"""
+
 from BuildScheduler.shared.pub_redis import publish_log_redis
 from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.objects.dataclass_objects.validation_models import ValidatorContext, TOMLValidationParams
@@ -10,6 +17,10 @@ async def publish_job_log(
     user_uuid=ValidatorContext.user_uuid,
     ts=TOMLValidationParams.ts
 )-> None:
+    """
+    Publishes a line using redis streams and logs the error code using vire_logger
+    """
+    #TODO: Add postgres status updation here.
     await publish_log_redis(
         line = f"{ts} : {line}",
         user_uuid=user_uuid, job_uuid=job_uuid

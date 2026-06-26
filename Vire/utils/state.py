@@ -6,7 +6,6 @@ from pathlib import Path
 available_frameworks_str = os.getenv("AVAILABLE_FRAMEWORKS")
 assert available_frameworks_str is not None
 available_frameworks:set[str] =  set(available_frameworks_str.lower().split(','))
-print(available_frameworks)
 
 # Redis
 redis_url = os.getenv("REDIS_URL")

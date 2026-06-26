@@ -23,9 +23,6 @@ logger = logging.getLogger(__name__)
 assert logfile_dir is not None
 logfile_location = os.path.join(logfile_dir, "gc.log")
 
-print(log_value)
-
-
 async def gc_core_loop():
     """The core GC loop. Asynchronous."""
     while True:
