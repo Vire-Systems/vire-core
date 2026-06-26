@@ -1,9 +1,14 @@
+"""This module is responsible for registering build data and build state with the Database when a build request is sent."""
+
+from BuildScheduler.Scheduler.db.sqlite_orm.crud import create
+from BuildScheduler.Scheduler.db.caching.redis_registry import register_job_with_redis
+
 from Vire.core.validate_request import validate_details
-from BuildScheduler.Scheduler.db.crud import create
 from Vire.models.pydantic_classes import BuildRequestModel
 from Vire.objects.dataclass_objects.validation_models import ValidatorContext
 
 async def register_build(BRM: BuildRequestModel):
+    """Register a build with local SQLite database and redis asynchronously."""
     try:
         validator_context = ValidatorContext(
             job_uuid=BRM.job_uuid,
@@ -20,5 +25,6 @@ async def register_build(BRM: BuildRequestModel):
 
         await create.register_build_data(BRM, validated_toml)
         await create.register_build_state(job_uuid=BRM.job_uuid, user_uuid=BRM.user_uuid, status="queued")
+        await register_job_with_redis(BRM)
     except Exception as e:
         print(e)
