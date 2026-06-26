@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 import docker
-import redis
 
 # State
 job_uuid = None
@@ -22,21 +21,12 @@ client = docker.from_env()
 
 # Redis
 redis_url = os.getenv("REDIS_URL")
-
-if redis_url:
-    redis_con = redis.Redis.from_url(redis_url)
-else:
-    print(f"Redis URL in {Path(__file__).resolve()} is {redis_url}.")
+assert redis_url is not None, f"Redis URL in {Path(__file__).resolve()} is {redis_url}."
 
 # Files
 logfile_dir = os.getenv("WORKER_LOGDIR")
 db_file = os.getenv("DB_PATH")
-if not db_file:
-    print(f"'db_file' in {Path(__file__).resolve()} is {db_file}.")
-    exit(1)
 
-if logfile_dir:
-    os.makedirs(logfile_dir, exist_ok=True)
-else:
-    print(f"'logfile_dir' in {Path(__file__).resolve()} is {logfile_dir}.")
+assert db_file is not None, f"'db_file' in {Path(__file__).resolve()} is {db_file}."
 
+assert logfile_dir is not None, f"'logfile_dir' in {Path(__file__).resolve()} is {logfile_dir}."

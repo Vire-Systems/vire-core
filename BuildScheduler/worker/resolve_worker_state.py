@@ -1,6 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
 from typing import Literal
+from BuildScheduler.worker.utils.vire_logger import cfn_log
 from utils.state import db_file
 
 
@@ -36,7 +37,7 @@ def update_job_state(
 )-> None:
     allowed_updates: list[str] = status_update_allowlist[prev_status]
     if status not in allowed_updates:
-        print(f"{prev_status} cannot be updated to {status}.")
+        cfn_log("warn", "'%s' cannot be updated to '%s' for Job UUID '%s'.", prev_status, status, job_uuid)
 
     assert db_file is not None
     with db_session(db_file) as conn:
