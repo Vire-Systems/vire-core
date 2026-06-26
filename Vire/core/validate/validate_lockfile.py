@@ -7,13 +7,12 @@ Functions -
 
 from textwrap import dedent
 
-from BuildScheduler.shared.scheduler_logger import vire_logger
 from BuildScheduler.shared.shared_state import package_managers
 from Vire.errors import errors
 from Vire.objects.dataclass_objects.validation_models import LockfileValidationParams, ValidatorContext
 from Vire.project_manifest.errors import config_errors
-from BuildScheduler.shared.pub_redis import publish_log_redis
 from Vire.core.core_utils.fetch_lockfile import fetch_lockfile_name
+from Vire.utils.publish_job_log import publish_job_log
 
 async def fetch_and_validate_lockfile(
     LVP: LockfileValidationParams,
@@ -31,14 +30,6 @@ async def fetch_and_validate_lockfile(
         3. ts - Timestamp
         4. common_line - The common line used in the top validator function.
     """
-    
-    #Helper inside the fn for publishing log lines to redis.
-    async def publish_job_log(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=ts)-> None:
-        await publish_log_redis(
-            line = f"{ts} : {line}",
-            user_uuid=user_uuid, job_uuid=job_uuid
-        )
-        await vire_logger("info", f"Error code: '{error_code}' for job_uuid: '{job_uuid}'")
 
     # Main logic
     try:

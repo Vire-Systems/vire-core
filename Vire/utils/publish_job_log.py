@@ -1,0 +1,17 @@
+from BuildScheduler.shared.pub_redis import publish_log_redis
+from BuildScheduler.shared.scheduler_logger import vire_logger
+from Vire.objects.dataclass_objects.validation_models import ValidatorContext, TOMLValidationParams
+
+
+async def publish_job_log(
+    line: str,
+    error_code: str,
+    job_uuid=ValidatorContext.job_uuid,
+    user_uuid=ValidatorContext.user_uuid,
+    ts=TOMLValidationParams.ts
+)-> None:
+    await publish_log_redis(
+        line = f"{ts} : {line}",
+        user_uuid=user_uuid, job_uuid=job_uuid
+    )
+    await vire_logger("info", f"Error code: '{error_code}' for job_uuid: '{job_uuid}'")

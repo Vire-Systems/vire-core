@@ -9,12 +9,12 @@ Functions -
 from textwrap import dedent
 from tomllib import TOMLDecodeError
 
-from BuildScheduler.shared.scheduler_logger import vire_logger
 from Vire.core.core_utils.fetch_buildreq import fetch_vire_toml
 from Vire.project_manifest.parse_toml import parse_toml
 from Vire.project_manifest.errors import config_errors
 from Vire.errors import errors
-from BuildScheduler.shared.pub_redis import publish_log_redis
+from Vire.utils.publish_job_log import publish_job_log
+
 from Vire.objects.dataclass_objects.validation_models import ValidatorContext, ParsedTOMLObject
 
 async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject | None:
@@ -27,14 +27,6 @@ async def fetch_and_parse_toml(VC: ValidatorContext, ts: str)-> ParsedTOMLObject
     returns -
         ParsedTOMLObject
     """
-
-    #Helper inside the fn for publishing log lines to redis.
-    async def publish_job_log(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=ts)-> None:
-        await publish_log_redis(
-            line = f"{ts} : {line}",
-            user_uuid=user_uuid, job_uuid=job_uuid
-        )
-        await vire_logger("info", f"Error code: '{error_code}' for job uuid: {job_uuid}")
 
     try:
         vire_toml_str = await fetch_vire_toml(

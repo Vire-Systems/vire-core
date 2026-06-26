@@ -7,10 +7,9 @@ Functions -
 
 from textwrap import dedent
 
-from BuildScheduler.shared.scheduler_logger import vire_logger
+from Vire.utils.publish_job_log import publish_job_log
 from Vire.core.core_utils.fetch_buildreq import fetch_package_json
 from Vire.project_manifest.validator import validate_package_json
-from BuildScheduler.shared.pub_redis import publish_log_redis
 
 from Vire.errors import errors
 from Vire.project_manifest.errors import config_errors
@@ -28,14 +27,6 @@ async def fetch_and_validate_pkgjson(
         1. VC - Validator context, abbrev. Context provided to 'validate_request'.
         2. PJVP - Package JSON Validation Params, abbrev. Parameters for the function.
     """
-
-    #helper to publish line to redis pubsub
-    async def publish_job_log(line, error_code: str, job_uuid=VC.job_uuid, user_uuid=VC.user_uuid, ts=PJVP.ts)-> None:
-        await publish_log_redis(
-            line = f"{ts} : {line}",
-            user_uuid=user_uuid, job_uuid=job_uuid
-        )
-        await vire_logger("info", f"Error code: '{error_code}' for job_uuid: '{job_uuid}'")
 
     # Main logic
     try:
