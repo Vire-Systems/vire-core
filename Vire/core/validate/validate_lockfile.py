@@ -1,5 +1,5 @@
 """
-This module handles fetching and validating the lockfile from data provided when requesting build.
+This module handles orchestrating the fetch and validation process for the lockfile from data provided when requesting a build.
 
 Functions -
     1. fetch_and_validate_lockfile

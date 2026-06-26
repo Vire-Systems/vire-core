@@ -1,5 +1,5 @@
 """
-This module is responsible for validating the vire.toml file fetched from the user's repository.
+This module is responsible for orchestrating the validation of vire.toml file fetched from the user's repository.
 
 Functions -
     1. validate_vire_toml

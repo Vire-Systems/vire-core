@@ -1,4 +1,9 @@
+"""
+This module handles the orchestration of the functions which fetch and validate the package.json file from a user repository.
 
+Functions -
+    1. fetch_and_validate_pkgjson
+"""
 
 from textwrap import dedent
 
@@ -17,7 +22,7 @@ async def fetch_and_validate_pkgjson(
     PJVP: PkgJSONValidationParams
 )-> bool | None:
     """
-    Fetches and validates the package.json from user's repo,branch.
+    Fetches and validates the package.json from user's repo & branch.
 
     Args:
         1. VC - Validator context, abbrev. Context provided to 'validate_request'.
