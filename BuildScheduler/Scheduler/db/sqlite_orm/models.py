@@ -12,7 +12,7 @@ from sqlalchemy import TIMESTAMP, Boolean, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
 
-from BuildScheduler.Scheduler.db.db import Base, engine
+from BuildScheduler.Scheduler.db.sqlite_orm.db import Base, engine
 from BuildScheduler.shared.scheduler_logger import vire_logger
 
 

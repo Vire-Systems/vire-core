@@ -8,7 +8,7 @@ Functions -
 import traceback
 from fastapi import APIRouter
 
-from BuildScheduler.Scheduler.db.crud import create
+from BuildScheduler.Scheduler.db.sqlite_orm.crud import create
 from Vire.core.validate_request import validate_details
 from Vire.models.pydantic_classes import BuildRequestModel
 from Vire.objects.dataclass_objects.validation_models import ValidatorContext

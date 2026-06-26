@@ -10,7 +10,7 @@ import subprocess
 from textwrap import dedent
 
 from BuildScheduler.Scheduler.dataclass_models.scheduler_dc import WorkerCreationParams
-from BuildScheduler.Scheduler.db.crud import update
+from BuildScheduler.Scheduler.db.sqlite_orm.crud import update
 from BuildScheduler.Scheduler.errors.db_errors import NoJobStateError
 from BuildScheduler.Scheduler.manage_worker.del_container import delayed_delete
 from BuildScheduler.shared.pub_redis import publish_log_redis

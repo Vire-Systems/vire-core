@@ -3,7 +3,7 @@
 import asyncio
 
 from BuildScheduler.Scheduler.core.dispatch_from_queue import dispatch_queued_job, get_worker_count
-from BuildScheduler.Scheduler.db.crud import read
+from BuildScheduler.Scheduler.db.sqlite_orm.crud import read
 from BuildScheduler.Scheduler.utils import state
 from BuildScheduler.shared.scheduler_logger import vire_logger
 

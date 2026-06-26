@@ -7,8 +7,8 @@ from typing import Literal
 from sqlalchemy import func
 from sqlalchemy.future import select
 
-from BuildScheduler.Scheduler.db.db import async_session
-from BuildScheduler.Scheduler.db.models import BuildState
+from BuildScheduler.Scheduler.db.sqlite_orm.db import async_session
+from BuildScheduler.Scheduler.db.sqlite_orm.models import BuildState
 from BuildScheduler.Scheduler.errors import db_errors
 from BuildScheduler.Scheduler.utils.queues_locks import job_status_locks
 

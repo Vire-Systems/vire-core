@@ -47,7 +47,7 @@ class TestGetBuildRecord:
         }
         
         # Act
-        # with patch('BuildScheduler.Scheduler.db.crud.read.db_session') as mock_db:
+        # with patch('BuildScheduler.Scheduler.db.sqlite_orm.crud.read.db_session') as mock_db:
         #     mock_db.query.return_value.filter.return_value.first.return_value = expected_record
         #     result = get_build_record(build_id)
         #     assert result == expected_record
@@ -59,7 +59,7 @@ class TestGetBuildRecord:
         build_id = 999
         
         # Act & Assert
-        # with patch('BuildScheduler.Scheduler.db.crud.read.db_session') as mock_db:
+        # with patch('BuildScheduler.Scheduler.db.sqlite_orm.crud.read.db_session') as mock_db:
         #     mock_db.query.return_value.filter.return_value.first.return_value = None
         #     result = get_build_record(build_id)
         #     assert result is None
@@ -76,7 +76,7 @@ class TestUpdateBuildStatus:
         new_status = "completed"
         
         # Act
-        # with patch('BuildScheduler.Scheduler.db.crud.update.db_session') as mock_db:
+        # with patch('BuildScheduler.Scheduler.db.sqlite_orm.crud.update.db_session') as mock_db:
         #     mock_record = MagicMock()
         #     mock_db.query.return_value.filter.return_value.first.return_value = mock_record
         #     result = update_build_status(build_id, new_status)
@@ -90,7 +90,7 @@ class TestUpdateBuildStatus:
         build_id = 999
         
         # Act & Assert
-        # with patch('BuildScheduler.Scheduler.db.crud.update.db_session') as mock_db:
+        # with patch('BuildScheduler.Scheduler.db.sqlite_orm.crud.update.db_session') as mock_db:
         #     mock_db.query.return_value.filter.return_value.first.return_value = None
         #     with pytest.raises(ValueError):
         #         update_build_status(build_id, "completed")

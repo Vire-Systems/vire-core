@@ -4,8 +4,8 @@ The module responsible for all the 'create' operations of the CRUD layer.
 
 from typing import Literal
 
-from BuildScheduler.Scheduler.db.db import async_session
-from BuildScheduler.Scheduler.db.models import BuildData, BuildState
+from BuildScheduler.Scheduler.db.sqlite_orm.db import async_session
+from BuildScheduler.Scheduler.db.sqlite_orm.models import BuildData, BuildState
 from Vire.models.pydantic_classes import BuildRequestModel
 from Vire.objects.dataclass_objects.validation_models import ParsedTOMLObject
 
