@@ -40,6 +40,7 @@ async def fetch_and_validate_pkgjson(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-031. Invalid 'package.json'.
+            Timestamp: {PJVP.ts}
 
             Job Details:
                 Job UUID: {VC.job_uuid}
@@ -56,6 +57,7 @@ async def fetch_and_validate_pkgjson(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-032. Branch does not exist.
+            Timestamp: {PJVP.ts}
 
             Job Details:
                 Job UUID: {VC.job_uuid}
@@ -72,6 +74,7 @@ async def fetch_and_validate_pkgjson(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-033. File fetch from remote failed.
+            Timestamp: {PJVP.ts}
 
             Job Details:
                 Job UUID: {VC.job_uuid}
@@ -90,6 +93,7 @@ async def fetch_and_validate_pkgjson(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-034. Unsupported git provider {VC.provider.capitalize()}.
+            Timestamp: {PJVP.ts}
 
             Details:
                 Job UUID: {VC.job_uuid}

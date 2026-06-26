@@ -38,6 +38,7 @@ async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PT
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-001. Unable to validate vire.toml.
+            Timestamp: {TVP.ts}
 
             Details:
                 Job UUID: {VC.job_uuid}
@@ -55,6 +56,7 @@ async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PT
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-022. PM and lockfile do not match.
+            Timestamp: {TVP.ts}
 
             Job Details:
                 Job UUID: {VC.job_uuid}
@@ -76,6 +78,7 @@ async def validate_vire_toml(TVP: TOMLValidationParams, VC: ValidatorContext, PT
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-023. Invalid symbols for output directory.
+            Timestamp: {TVP.ts}
 
             Job Details:
                 Job UUID: {VC.job_uuid}

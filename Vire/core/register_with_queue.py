@@ -30,6 +30,7 @@ async def register_build(BRM: BuildRequestModel):
         await create.register_build_state(job_uuid=BRM.job_uuid, user_uuid=BRM.user_uuid, status="queued")
         await register_job_with_redis(BRM, "passed")
         return {"success": True, "Reason": "Server accepted the request."}
+
     except Exception:
         await register_job_with_redis(BRM, "failed")
         await vire_logger("critical", "Registering with SQLite queue failed.")

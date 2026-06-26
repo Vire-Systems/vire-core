@@ -55,6 +55,7 @@ async def fetch_and_validate_lockfile(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-015. Unsupported package manager.
+            Timestamp: {ts}
 
             Details:
                 Job UUID: {VC.job_uuid}
@@ -70,6 +71,7 @@ async def fetch_and_validate_lockfile(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-012. Empty lockfile.
+            Timestamp: {ts}
 
             Details:
                 Job UUID: {VC.job_uuid}
@@ -83,6 +85,7 @@ async def fetch_and_validate_lockfile(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-011. Check docs for details.
+            Timestamp: {ts}
 
             Job Details:
                 Job UUID: {VC.job_uuid}
@@ -98,6 +101,7 @@ async def fetch_and_validate_lockfile(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-013. No lockfile.
+            Timestamp: {ts}
 
             Job Details:
                 Job UUID: {VC.job_uuid}
@@ -113,6 +117,7 @@ async def fetch_and_validate_lockfile(
         await publish_job_log(dedent(
             f"""
             Error: VC-VD-014. Check docs for error definition.
+            Timestamp: {ts}
 
             Details:
                 Job UUID: {VC.job_uuid}

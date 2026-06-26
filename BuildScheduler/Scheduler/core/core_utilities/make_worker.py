@@ -3,8 +3,7 @@ This module (make_worker) is repsonsible with providing an abstracted function c
 This is made so that the API layer does not mess with fetching raw data, parsing, etc.
 """
 
-from BuildScheduler.Scheduler.db.sqlite_orm.crud import read
-from BuildScheduler.Scheduler.db.sqlite_orm.crud import update
+from BuildScheduler.Scheduler.db.sqlite_orm.crud import read, update
 from BuildScheduler.Scheduler.errors.db_errors import NoJobStateError
 from BuildScheduler.Scheduler.manage_worker.create_worker import create_worker_process
 from BuildScheduler.shared.scheduler_logger import vire_logger
