@@ -18,7 +18,6 @@ from BuildScheduler.shared.pub_redis import r
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     """FastAPI lifespan CM"""
-    print("INFO:     [Vire Core] Starting up.")
     await vire_logger("info", "[Vire core] start up.")
     tasks = []
     await init_db()
@@ -26,15 +25,14 @@ async def lifespan(app:FastAPI):
     try:
         yield
     finally:
-        print("INFO:     [Vire Core] Shutting down.")
         await vire_logger("info", "[Vire Core] shutting down.")
         if not async_requests.client:
-            print("INFO:     [async req setup] No client found. Ignoring aclose()...")
+            await vire_logger("info", "[async req setup] No client found. Ignoring aclose()...")
         else:
             await async_requests.client.aclose()
-            print("INFO:     [async req setup] client pool closed.")
+            await vire_logger("info" ,"[async req setup] client pool closed.")
         await r.aclose()
-        print("INFO:     [pub_redis] shared client closed.")
+        await vire_logger("info" ,"[pub_redis] shared client closed.")
         for task in tasks:
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
