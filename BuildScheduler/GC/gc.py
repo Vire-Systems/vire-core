@@ -25,19 +25,21 @@ logfile_location = os.path.join(logfile_dir, "gc.log")
 
 async def gc_core_loop():
     """The core GC loop. Asynchronous."""
-    while True:
-        try:
-            setup_async_logging(log_file=logfile_location, log_level=log_value)
-            sync_vire_logger("info", "GC starting.")
-            overdue_containers: list[Container] | None = await get_containers_overdue(client)
-            await batch_remove(overdue_containers)
+    try:
+        while True:
+            try:
+                setup_async_logging(log_file=logfile_location, log_level=log_value)
+                sync_vire_logger("info", "GC starting.")
+                overdue_containers: list[Container] | None = await get_containers_overdue(client)
+                await batch_remove(overdue_containers)
+    
+            except Exception as e:
+                await vire_logger("critical", "[GC gc_core_loop] Unable to collect. Details: %s", e)
 
-        except Exception as e:
-            await vire_logger("critical", "[GC gc_core_loop] Unable to collect. Details: %s", e)
+            await asyncio.sleep(30)
 
-        finally:
-            await r.aclose()
-        await asyncio.sleep(30)
+    finally:
+        await r.aclose()
 
 
 if __name__ == "__main__":

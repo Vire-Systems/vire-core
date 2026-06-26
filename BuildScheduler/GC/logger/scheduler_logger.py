@@ -6,8 +6,8 @@ import logging
 
 def sync_vire_logger(log_type: str, obj:str, *args)-> None:
     """log_type levels: [info | warn | error | critical | exit]"""
+    logger = logging.getLogger()
     try:
-        logger = logging.getLogger()
         l_type = log_type.lower()
         if l_type == 'info':
             logger.info(obj, *args)

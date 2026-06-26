@@ -78,8 +78,8 @@ async def create_worker_process(WCP: WorkerCreationParams) -> None:
             return
 
         try:
-            subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            await update.update_job_status(job_uuid=WCP.job_uuid, status_msg="running")
+            process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            await update.update_job_status(job_uuid=WCP.job_uuid, status_msg="running", PID=process.pid)
             await delayed_delete(WCP.job_uuid)
 
         except NoJobStateError:

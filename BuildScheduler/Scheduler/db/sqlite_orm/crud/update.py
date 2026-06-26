@@ -16,6 +16,7 @@ async def update_job_status(
     job_uuid: str,
     status_msg: Literal["queued", "running", "crashed", "finished", "cancelled", "failed"],
     error_code: str | None = None,
+    PID: int | None = None,
 ) -> None:
     """
     CRUD function for updating job status in BuildState table.
@@ -34,5 +35,9 @@ async def update_job_status(
 
                 if error_code:
                     job_state.error = error_code
+                if PID:
+                    job_state.pid = PID
+
                 job_state.status=status_msg
                 job_state.finished_at = func.now()
+

@@ -11,7 +11,7 @@ import logging
 import queue
 from logging.handlers import QueueHandler, QueueListener
 
-LISTENER: QueueListener = None
+LISTENER: QueueListener | None = None
 
 
 def setup_async_logging(log_file, log_level: int = logging.DEBUG):

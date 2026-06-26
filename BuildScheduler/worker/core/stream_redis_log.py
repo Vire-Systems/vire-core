@@ -1,8 +1,9 @@
 from utils import state
 from utils.vire_logger import cfn_log
+from redis import from_url
 
-
-r = state.redis_con
+assert state.redis_url
+r = from_url(state.redis_url)
 client = state.client
 
 # Helper called by 'stream_logs'
