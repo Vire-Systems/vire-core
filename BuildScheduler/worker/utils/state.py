@@ -17,6 +17,8 @@ repo_name: str | None = None
 OUTPUT_DIR: str | None = None
 
 CONTAINER_EXPIRY = 300
+
+# Docker
 client = docker.from_env()
 
 # Redis
