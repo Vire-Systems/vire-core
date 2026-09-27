@@ -26,11 +26,16 @@ async def remove_container(worker_context: WorkerContext):
     """Name (UUID4 used for naming) based container remover"""
     try:
         async with transition_job_state(
-            on_enter= None, on_error= "finished", on_exit = "finished",
-            state_updater = update_job_state,
-            job_uuid=worker_context.job_uuid, prev_status="running"
+            on_enter=None,
+            on_error="finished",
+            on_exit="finished",
+            state_updater=update_job_state,
+            job_uuid=worker_context.job_uuid,
+            prev_status="running",
         ):
-            runtime: ContainerRuntime = RUNTIME_REGISTRY[worker_config.CONTAINER_RUNTIME]()
+            runtime: ContainerRuntime = RUNTIME_REGISTRY[
+                worker_config.CONTAINER_RUNTIME
+            ]()
             runtime.remove(worker_context.job_uuid)
 
     except (ContainerAdapterAPIError, ContainerNotFound) as e:

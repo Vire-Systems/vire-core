@@ -84,13 +84,13 @@ class UnsupportedGitProviderError(VireBaseError):
 class RepoFileFetchError(VireBaseError):
     """Raise when raw file fetch from client provided URL fails."""
 
-    error_code: str = "VC-VD-FILE_FETCH_FAILED"
+    error_code: str = "VC-I-FILE_FETCH_FAILED"
     error_title: str = "Error: VC-VD-014. Git provider API failed."
 
     severity: Severity = "critical"
 
     possible_causes: tuple[str, ...] | None = (
-        "Check {VC.provider.capitalize()}'s status",
+        "Check provider's status",
         "Could be caused by the package.json file being malformed.",
         "Outdated Commit SHA because something was pushed right after the build started (1-3s delay between pushes.)",
     )

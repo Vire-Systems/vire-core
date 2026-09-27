@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Self
+from typing import Self, override
 
 from shared.errors.base_error import VireBaseError
 from shared.events.base_event import VireBaseEvent
@@ -31,6 +31,7 @@ class ErrorEvent(VireBaseEvent):
         self.summary = self.error.error_title
         self.severity = self.error.severity
 
+    @override
     def get_extra_content(self) -> dict[str, tuple[str, ...] | None]:
         return {
             "possible_causes": self.error.possible_causes,

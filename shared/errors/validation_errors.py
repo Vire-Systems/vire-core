@@ -16,7 +16,7 @@ from shared.utils.types import Severity
 
 @dataclass(slots=True, kw_only=True)
 class InvalidPackageJsonError(VireBaseError):
-    """Exception for Invalid package.json."""
+    """Raise when '`package.json`' is invalid."""
 
     error_code: str = "VC-VD-INVALID_PACKAGE_JSON"
     severity: Severity = "warn"
@@ -31,9 +31,9 @@ class InvalidPackageJsonError(VireBaseError):
 
 @dataclass(slots=True, kw_only=True)
 class InvalidTomlSyntaxError(VireBaseError):
-    """Exception for when vire.toml fails to decode (aka TOMLDecodeError)"""
+    """Raise when '`vire.toml`' fails to decode (aka TOMLDecodeError)"""
 
-    error_title: str = "The TOML syntax is invalid."
+    error_title: str = "The TOML syntax for 'vire.toml' is invalid."
     error_code: str = "VC-VD-INVALID_TOML_SYNTAX"
     severity: Severity = "warn"
 
@@ -62,6 +62,10 @@ class PackageManagerException(VireBaseError):
     error_title: str = "The package manager provided is not supported by Vire yet."
     error_code: str = "VC-VD-UNSUPPORTED_PM"
     severity: Severity = "warn"
+
+    notes: tuple[str, ...] | None = (
+        "Create a feature request for the provided package manager.",
+    )
 
 
 @dataclass(slots=True, kw_only=True)
@@ -102,11 +106,14 @@ class UnsupportedFrameworkError(VireBaseError):
         "Create a new GitHub feature issue to add a new framework.",
     )
 
+
 @dataclass(slots=True, kw_only=True)
 class InvalidIODataError(VireBaseError):
     """Internal exception for invalid data types"""
 
-    error_title: str = "Data returned by the Git provider or the data parsed by Vire is invalid."
+    error_title: str = (
+        "Data returned by the Git provider or the data parsed by Vire is invalid."
+    )
     error_code: str = "VC-IN-UNEXPECTED_INTERNAL_ERROR"
     severity: Severity = "critical"
 

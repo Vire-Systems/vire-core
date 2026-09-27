@@ -84,6 +84,7 @@ class PkgJSONValidationParams:
     common_line: str
     ts: str
 
+
 @dataclass(frozen=True, slots=True)
 class IOFetchedContent:
     """

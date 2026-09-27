@@ -30,12 +30,15 @@ from shared.container_runtimes.runtime_dc import RuntimeMetadata
 
 class DockerRuntime(ContainerRuntime):
     def __init__(self):
-        self.client: DockerClient = docker.from_env()
+        self.client: DockerClient | None = None
 
     # Client ----
     @override
-    def get_client(self) -> DockerClient:
+    def _get_client(self) -> DockerClient:
         """Return the docker client."""
+        if self.client is None:
+            self.client = docker.from_env()
+
         return self.client
 
     # Container creation ---
@@ -54,7 +57,7 @@ class DockerRuntime(ContainerRuntime):
         }
         """
         try:
-            client = self.get_client()
+            client = self._get_client()
             if metadata.expires_at is None:
                 raise ValueError("expires_at is required for container creation.")
 
@@ -89,13 +92,13 @@ class DockerRuntime(ContainerRuntime):
     def remove(self, job_uuid: str) -> None:
         """Name (UUID4 used for naming) based container remover"""
         try:
-            client = self.get_client()
+            client = self._get_client()
             container_obj = client.containers.get(job_uuid)
             _ = container_obj.wait()
             container_obj.remove(force=True)
 
         except NotFound:
-            raise ContainerNotFound
+            raise ContainerNotFound()
 
         except ContainerNotFound:
             raise
@@ -117,7 +120,7 @@ class DockerRuntime(ContainerRuntime):
         """Stream the file content inside the docker container as an archive (tar file)."""
 
         try:
-            client = self.get_client()
+            client = self._get_client()
             stream, _stat = client.api.get_archive(job_uuid, output_path)
 
             with open(path_to_archive, "wb") as tar_file:
@@ -134,7 +137,7 @@ class DockerRuntime(ContainerRuntime):
     def get_container_log(self, job_uuid: str) -> Generator[bytes, None, None]:
         """Yield a line of stdout from the container."""
         try:
-            client = self.get_client()
+            client = self._get_client()
             container_obj = client.containers.get(job_uuid)
 
             for line in container_obj.logs(
@@ -167,7 +170,7 @@ class DockerRuntime(ContainerRuntime):
         ContainerAPIError
         """
         try:
-            client = self.get_client()
+            client = self._get_client()
             filter_labels: dict[str, str | list[str] | bool] = {
                 "label": [
                     f"managed_by={metadata.managed_by}",
@@ -209,7 +212,7 @@ class DockerRuntime(ContainerRuntime):
         """
         try:
             now_time: int = int(time.time())
-            client = self.get_client()
+            client = self._get_client()
             filter_labels: dict[str, str | list[str] | bool] = {
                 "label": [
                     f"managed_by={metadata.managed_by}",

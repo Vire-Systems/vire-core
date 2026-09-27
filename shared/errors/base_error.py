@@ -14,26 +14,23 @@ class VireBaseError(Exception):
 
     Instances of this class are intended to carry metadata only. They do not
     perform logging or persistence themselves; that responsibility belongs to
-    the centralized exception handler.
+    the centralized event handler.
 
     Attributes:
     ----------
-    error_code:
-        Stable identifier used by the logging system and databases.
+    - error_code: Stable identifier used by the logging system and databases.
 
-    error_title:
-        Short, human-readable title describing the error. Intended for the user.
+    - error_title: Short, human-readable title describing the error. Intended for the user.
 
-    severity:
-        Logging severity associated with the exception.
+    - severity: Logging severity associated with the exception.
 
     Optional Attributes:
     ---------
     These are sent to the User Report.
 
-    possible_causes
-    possible_fixes
-    notes - suggestions to the user
+    1. possible_causes
+    2. possible_fixes
+    3. notes (suggestions to the user)
     """
 
     error_title: str

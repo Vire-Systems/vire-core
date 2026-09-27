@@ -21,7 +21,7 @@ async def fetch_vire_toml(
     Args:
     -----
     1. provider - The name of the git provider (ex: 'github', 'gitlab', etc)
-    2. remote_user - The username given to remote git provider 
+    2. remote_user - The username given to remote git provider
     3. remote_reponame - The remote repository name
     4. path - The path to the req file.
     5. branch - Latest branch which was pushed.
@@ -73,7 +73,7 @@ async def fetch_package_json(
     -----
 
     1. provider - The name of the git provider (ex: 'github', 'gitlab', etc)
-    2. remote_user - 
+    2. remote_user -
     3. remote_reponame - The repository name (ex: vire in "https://github.com/Vire-Systems/vire/...")
     4. path - The path to the req file.
     5. branch - Latest branch which was pushed.

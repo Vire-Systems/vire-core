@@ -1,12 +1,13 @@
 """The master class inherited by all Container runtime classes"""
 
 from collections.abc import AsyncGenerator, Generator
+from typing import Any
 
 from shared.container_runtimes.runtime_dc import RuntimeMetadata
 
 
 class ContainerRuntime:
-    def get_client(self):
+    def _get_client(self) -> Any:
         raise NotImplementedError
 
     def create(

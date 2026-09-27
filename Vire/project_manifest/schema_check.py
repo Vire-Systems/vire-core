@@ -12,7 +12,7 @@ from Vire.objects.validation_models import ParsedTOMLObject
 from shared.errors.validation_errors import InvalidVireTomlError
 
 
-async def check_toml_schema(toml_dict: dict) -> ParsedTOMLObject:
+async def check_toml_schema(toml_dict: dict) -> ParsedTOMLObject: # pyright: ignore[reportMissingTypeArgument]
     """
     Validates the schema of the toml file. Also returns whether package install is required.
 
@@ -32,8 +32,8 @@ async def check_toml_schema(toml_dict: dict) -> ParsedTOMLObject:
         if details is None:
             raise InvalidVireTomlError(error_title="[details] table not found.")
 
-        framework = details.get("framework")
-        package_manager = details.get("package_manager")
+        framework: str = details.get("framework")
+        package_manager: str = details.get("package_manager")
 
         project: dict[str, str] | None = toml_dict.get("project")
         if project is None:

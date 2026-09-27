@@ -56,7 +56,9 @@ async def validate_details(VC: ValidatorContext) -> ParsedTOMLObject | None:
         if not provider_data:
             return
 
-        toml_data: ParsedTOMLObject | None = await parse_vire_toml(VC=VC, vire_toml_str=provider_data.vire_toml_str)
+        toml_data: ParsedTOMLObject | None = await parse_vire_toml(
+            VC=VC, vire_toml_str=provider_data.vire_toml_str
+        )
         if toml_data is None:
             return
 
@@ -69,9 +71,7 @@ async def validate_details(VC: ValidatorContext) -> ParsedTOMLObject | None:
         )
 
         lockfile_name = await validate_lockfile(
-            LVP=lockfile_params,
-            VC=VC,
-            lockfile_names=provider_data.lockfile_names
+            LVP=lockfile_params, VC=VC, lockfile_names=provider_data.lockfile_names
         )
 
         if lockfile_name is None:
@@ -82,13 +82,15 @@ async def validate_details(VC: ValidatorContext) -> ParsedTOMLObject | None:
             lockfile_name=lockfile_name, common_line=common_line, ts=ts()
         )
 
-        if await validate_vire_toml(TVP=validate_data_obj, VC=VC, PTO=toml_data) is None:
+        if (
+            await validate_vire_toml(TVP=validate_data_obj, VC=VC, PTO=toml_data)
+            is None
+        ):
             return
 
         # fetch and validate package.json
         is_valid = await validate_pkgjson(
-            VC=VC, 
-            package_json_str=provider_data.package_json_str
+            VC=VC, package_json_str=provider_data.package_json_str
         )
 
         if not is_valid:

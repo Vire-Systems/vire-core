@@ -12,15 +12,17 @@ from shared.shared_state import shared_config
 from shared.state_transition import transition_job_state
 
 
-async def terminate_worker(job_uuid: str)-> None:
+async def terminate_worker(job_uuid: str) -> None:
     """
     Cancel a job.
     """
     try:
         async with transition_job_state(
-            on_exit = "cancelled", on_enter=None, on_error=None,
-            state_updater = update.update_job_status,
-            job_uuid = job_uuid
+            on_exit="cancelled",
+            on_enter=None,
+            on_error=None,
+            state_updater=update.update_job_status,
+            job_uuid=job_uuid,
         ):
             runtime = RUNTIME_REGISTRY[shared_config.CONTAINER_RUNTIME]()
             await asyncio.to_thread(runtime.remove, job_uuid=job_uuid)

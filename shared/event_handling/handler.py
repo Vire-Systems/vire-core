@@ -50,17 +50,17 @@ async def dispatch_event(
     job_details:
         Optional additional details that can be added to the user report.
 
-    # Note: The Key:Value pair in job_details should be user presentable. ie;
+    Note: The Key:Value pair in job_details should be user presentable. ie;
         - "Package Manager":"npm"
         - "Branch":"main"
         Will be formatted to '`Branch: main`' in the user report.
     """
 
-    if not isinstance(event, VireBaseEvent):
-        raise TypeError(f"{type(event).__name__} must inherit from VireBaseEvent.")
+    if not isinstance(event, VireBaseEvent): #pyright: ignore[reportUnnecessaryIsInstance]
+        raise TypeError(f"{type(event).__name__} must inherit from VireBaseEvent.") #pyright: ignore[reportUnreachable]
 
     if isinstance(event, ErrorEvent):
-        if not isinstance(event.error, VireBaseError):
+        if not isinstance(event.error, VireBaseError): #pyright: ignore[reportUnnecessaryIsInstance]
             raise TypeError(
                 f"The Error Event's error attribute ({type(event.error).__name__}) must inherit from VireBaseError."
             )

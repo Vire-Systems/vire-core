@@ -1,7 +1,8 @@
 """
 Basic logging setup for vire scheduler.
 
-Functions -
+Functions:
+----------
     1. vire_logger
 """
 

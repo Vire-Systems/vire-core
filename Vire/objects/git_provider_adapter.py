@@ -1,6 +1,5 @@
 """
-This module (remote_adapter) is responsible for providing remote (github,gitlab, etc) details.
-
+This module (remote_adapter) is responsible for providing remote git provider (github,gitlab, etc) details.
 """
 
 from typing import override
@@ -64,6 +63,7 @@ class GithubAdapter(GitProviderAdapter):
     @override
     def return_list_tree(self, user: str, reponame: str, commit_id: str):
         return f"https://api.github.com/repos/{user}/{reponame}/git/trees/{commit_id}"
+
 
 PROVIDER_REGISTRY: dict[str, type[GitProviderAdapter]] = {
     "github": GithubAdapter,
