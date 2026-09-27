@@ -3,6 +3,7 @@ All the Vire specific events.
 """
 
 from dataclasses import dataclass
+from typing import override
 
 from shared.utils.types import Severity
 from shared.events.base_event import VireBaseEvent
@@ -10,6 +11,7 @@ from shared.events.base_event import VireBaseEvent
 
 @dataclass(slots=True, kw_only=True)
 class GCReapEvent(VireBaseEvent):
+    """Event class for when a container is collected by the GC."""
     event: str = "ContainerReaped"
     severity: Severity = "warn"
     diag_code: str = "VC-GC-CONTAINER_REAPED"
@@ -20,6 +22,7 @@ class GCReapEvent(VireBaseEvent):
 
 @dataclass(slots=True, kw_only=True)
 class ContainerTimeoutEvent(VireBaseEvent):
+    """Event class for when a container exceedes the time limit imposed by the scheduler."""
     event: str = "ContainerTimedOut"
     severity: Severity = "info"
     diag_code: str = "VC-SC-CONTAINER_TIMED_OUT"
@@ -30,9 +33,7 @@ class ContainerTimeoutEvent(VireBaseEvent):
 
 @dataclass(slots=True, kw_only=True)
 class InfoEvent(VireBaseEvent):
-    """
-    This event is for
-    """
+    """Event class for emitting '`info`' events. Used in central logging."""
 
     event: str = "InfoEvent"
     severity: Severity = "info"
@@ -43,9 +44,11 @@ class InfoEvent(VireBaseEvent):
     extra_details: dict[str, tuple[str, ...] | None] | None = None
     extra_log_details: dict[str, str] | None = None
 
+    @override
     def get_extra_content(self) -> dict[str, tuple[str, ...] | None]:
         return self.extra_details if self.extra_details else {}
 
+    @override
     def get_log_extras(self) -> dict[str, str]:
         return self.extra_log_details if self.extra_log_details else {}
 
@@ -54,15 +57,17 @@ class InfoEvent(VireBaseEvent):
 class LogEvent(VireBaseEvent):
     """
     This event is a special child instance of BaseEvent.
-    Use this to send log events to the handler.
+    Used for sending log events to the handler.
 
-    By default job_uuid, user uuid are "SYSTEM".
+    - By default, the fields '`job_uuid`' and '`user_uuid`' are "`SYSTEM`".
 
-    By default write_log is True and propagate_state is False.
+    - By default, '`write_log`' is '`True`' and '`propagate_state`' is '`False`'.
 
     Internal log extras:
     ---
-    exception_name, source, internal_log
+    1. exception_name
+    2. source
+    3. internal_log
     """
 
     job_uuid: str = "SYSTEM"
@@ -76,6 +81,7 @@ class LogEvent(VireBaseEvent):
     write_log: bool = True
     propagate_state: bool = False
 
+    @override
     def get_log_extras(self) -> dict[str, str]:
         log_extras = {
             "exception_name": str(self.exception_name),

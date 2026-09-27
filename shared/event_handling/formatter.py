@@ -41,7 +41,7 @@ def _format_report(
             *(f"    {key}: {value}" for key, value in data.items()),
         ]
 
-    elif isinstance(data, Sequence):
+    elif isinstance(data, Sequence): #pyright: ignore[reportUnnecessaryIsInstance]
         return [
             heading + ":",
             *(f"    - {item}" for item in data),

@@ -11,7 +11,7 @@ import httpx
 from shared.errors import vire_errors as errors
 
 MAX_CONCURRENT = 50
-TIMEOUT = 5
+TIMEOUT = 50
 MAX_ALIVE = 50
 
 client: httpx.AsyncClient | None = None
@@ -22,7 +22,7 @@ limits = httpx.Limits(
     max_keepalive_connections=MAX_ALIVE, max_connections=MAX_CONCURRENT
 )
 
-timeout = httpx.Timeout(TIMEOUT, connect=5.0, read=5.0)
+timeout = httpx.Timeout(TIMEOUT, connect=50.0, read=50.0)
 
 
 async def _send_request_helper(client: httpx.AsyncClient, url: str) -> httpx.Response:
@@ -37,25 +37,25 @@ async def _send_request_helper(client: httpx.AsyncClient, url: str) -> httpx.Res
             status_code = e.response.status_code
             raise errors.RepoFileFetchError(
                 error_title=f"Fetching file (raw url: {url}) failed. Provider's API returned status code : '{status_code}'."
-            )
+            ) from e
 
-        except Exception:
+        except Exception as e:
             raise errors.RepoFileFetchError(
                 error_title=f"Fetching file (raw url: {url}) failed. Vire faced unexpected errors while fetching (Internal Error)."
-            )
+            ) from e
 
 
 async def send_request(url: str) -> httpx.Response:
     """
     Async implementation for requests (using httpx). Performs a GET request on the specified URL.
-    
+
     Behavior:
     ---------
     - Works asynchronously using asyncio.Semaphore for limiting max outbound requests.
     - Semaphore blocks until a thread calls release().
     - Uses httpx.Limits to avoid OOM and 100k requests under load.
     - Timeout of 5s is used as to not wait for long periods of time.
-    
+
     Args:
     -----
     - client - httpx.AsyncClient, an asynchronous HTTP client with connection pooling, HTTP/2, redirects, cookie persistence, etc.

@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from shared.utils.types import Severity
 
 
-
 _ = load_dotenv("/home/vire/vire/.env")
 
 from BuildScheduler.worker.cli_parser import load_parser
@@ -26,7 +25,10 @@ from BuildScheduler.worker.utils.state import worker_config
 from shared.container_runtimes.base_runtime import ContainerRuntime
 from shared.container_runtimes.runtime_registry import RUNTIME_REGISTRY
 
-from shared.errors.container_runtime_errors import ContainerCreationFail, OutputDirNotFound
+from shared.errors.container_runtime_errors import (
+    ContainerCreationFail,
+    OutputDirNotFound,
+)
 from shared.errors.worker_errors import CredentialError
 
 from shared.event_handling.handler import dispatch_event
@@ -95,9 +97,12 @@ async def main(worker_context: WorkerContext):
     job_uuid = worker_context.job_uuid
     try:
         async with transition_job_state(
-            on_enter=None, on_error="crashed", on_exit=None,
-            state_updater = update_job_state,
-            job_uuid = job_uuid, prev_status = "running"
+            on_enter=None,
+            on_error="crashed",
+            on_exit=None,
+            state_updater=update_job_state,
+            job_uuid=job_uuid,
+            prev_status="running",
         ):
             await container_create(worker_context)
 
@@ -106,18 +111,19 @@ async def main(worker_context: WorkerContext):
             event=LogEvent(
                 user_uuid=worker_context.user_uuid,
                 job_uuid=worker_context.job_uuid,
-                diag_code = getattr(e, "error_code", "VC-IN-UNEXPECTED_INTERNAL_ERROR"),
-                severity = getattr(e, "severity", "critical"),
+                diag_code=getattr(e, "error_code", "VC-IN-UNEXPECTED_INTERNAL_ERROR"),
+                severity=getattr(e, "severity", "critical"),
                 summary="Unexpected issue while trying to create/end a worker process.",
                 source="worker",
                 exception_name=type(e).__name__,
-                internal_log = getattr(e, "error_title", None),
+                internal_log=getattr(e, "error_title", None),
                 propagate_state=True,
             )
         )
 
     else:
         await complete_final_tasks(worker_context=worker_context)
+
 
 def init() -> WorkerContext:
     worker_context = load_parser()

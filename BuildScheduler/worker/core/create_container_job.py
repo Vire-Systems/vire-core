@@ -21,9 +21,6 @@ from shared.container_runtimes.runtime_registry import RUNTIME_REGISTRY
 from shared.logging.pub_redis import publish_log_redis
 from shared.shared_state import shared_config
 
-from shared.events.events import LogEvent
-from shared.event_handling.handler import dispatch_event
-
 
 # Helper
 def setup_creation(worker_context: WorkerContext) -> tuple[str, str]:
@@ -72,6 +69,10 @@ async def container_create(worker_context: WorkerContext) -> None:
     """
     Creates a container task and streams the container logs.
 
+    Note:
+    -----
+    Do NOT expose error_title of ContainerCreationFail. This instance contains sensitive information.
+
     Raises:
     -------
     - ContainerCreationFail
@@ -86,7 +87,7 @@ async def container_create(worker_context: WorkerContext) -> None:
 
     if (not image) or (not cmd_body):
         raise ContainerCreationFail(
-            error_title="Creation of the isolated environment failed."
+            error_title=f"The image ({image}) is invalid / Entry command is malformed."
         )
     cmd = ["sh", "-c", cmd_body]
 

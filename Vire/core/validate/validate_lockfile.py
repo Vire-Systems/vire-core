@@ -14,9 +14,7 @@ from Vire.objects.validation_models import LockfileValidationParams, ValidatorCo
 
 
 async def validate_lockfile(
-    LVP: LockfileValidationParams,
-    VC: ValidatorContext,
-    lockfile_names: list[str]
+    LVP: LockfileValidationParams, VC: ValidatorContext, lockfile_names: list[str]
 ) -> str | None:
     """
     Fetch and validate lockfile against a matrix of supported package managers.
@@ -43,8 +41,10 @@ async def validate_lockfile(
 
         if not expected_lockfile_name in lockfile_names:
             raise validation_errors.PackageManagerException(
-                error_title= f"Expected lockfile ({expected_lockfile_name}) not found.",
-                notes=(f"Expected {LVP.package_manager}'s lockfile ({expected_lockfile_name}).",)
+                error_title=f"Expected lockfile ({expected_lockfile_name}) not found.",
+                notes=(
+                    f"Expected {LVP.package_manager}'s lockfile ({expected_lockfile_name}).",
+                ),
             )
 
         return expected_lockfile_name
@@ -63,6 +63,6 @@ async def validate_lockfile(
                 "Commit SHA": VC.commit_id,
                 "Branch Name": VC.branch,
                 "PM provided": LVP.package_manager,
-                "Lockfile(s)" : ', '.join(lockfile_names)
+                "Lockfile(s)": ", ".join(lockfile_names),
             },
         )

@@ -10,6 +10,7 @@ from shared.utils.types import Severity
 
 @dataclass(slots=True, frozen=True)
 class EventHandlerContext:
+    """Dataclass for handling event handler context."""
     event: str
     timestamp: datetime
     diag_code: str

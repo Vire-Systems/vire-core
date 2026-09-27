@@ -10,10 +10,10 @@ from shared.utils.types import Severity
 
 @dataclass(slots=True, kw_only=True)
 class ContainerCreationFail(VireBaseError):
-    """Exception for Container creation failure."""
+    """Raise when container creation fails."""
 
     error_title: str
-    error_code: str = "SANDBOX_CREATION_FAIL"
+    error_code: str = "VC-IN-SANDBOX_CREATION_FAIL"
     severity: Severity = "critical"
 
     notes: tuple[str, ...] | None = (
@@ -24,7 +24,7 @@ class ContainerCreationFail(VireBaseError):
 
 @dataclass(slots=True, kw_only=True)
 class OutputDirNotFound(VireBaseError):
-    """Raised when the given output dir does not exist in the container."""
+    """Raise when the given output directory does not exist in the container."""
 
     error_title: str = (
         "Output Directory given in vire.toml does not exist in the sandbox."
@@ -40,7 +40,7 @@ class OutputDirNotFound(VireBaseError):
 
 @dataclass(slots=True, kw_only=True)
 class ContainerAdapterAPIError(VireBaseError):
-    """General catch all error. Raise instead of raising an Exception."""
+    """General catch all error. Raise instead of raising an '`Exception`'."""
 
     error_title: str
     error_code: str = "VC-IN-SANDBOX_RUNTIME_FAIL"
@@ -49,7 +49,7 @@ class ContainerAdapterAPIError(VireBaseError):
 
 @dataclass(slots=True, kw_only=True)
 class ContainerNotFound(VireBaseError):
-    """Raised when the container removal is already in progress"""
+    """Raise when the container removal is already in progress"""
 
     error_title: str = "Container not found."
     error_code: str = "VC-IN-SANDBOX_NOT_FOUND"

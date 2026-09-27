@@ -10,7 +10,7 @@ async def send_report(context: EventHandlerContext) -> None:
     report_body = format_user_report(context)
 
     await publish_log_redis(
-        line=report_body, job_uuid=context.job_uuid, user_uuid=context.user_uuid
+        line= (report_body + '\n'), job_uuid=context.job_uuid, user_uuid=context.user_uuid
     )
 
 

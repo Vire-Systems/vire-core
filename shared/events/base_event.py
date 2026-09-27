@@ -12,37 +12,26 @@ class VireBaseEvent:
     The event handler expects an instance of this contract to process
     logging, state propagation, and external communication.
 
-    Attributes
+    Attributes:
     ----------
-    event : str
-        Name of the event being emitted.
+    - event (str): Name of the event being emitted.
 
-    job_uuid : str
-        UUID of the associated build job.
+    - job_uuid (str): UUID of the associated build job.
 
-    user_uuid : str
-        UUID of the user associated with the build job.
+    - user_uuid (str): UUID of the user associated with the build job.
 
-    diag_code : str
-        Diagnostic reference code associated with the event.
+    - diag_code (str): Diagnostic reference code associated with the event.
 
-    severity : Severity
-        Severity level used for logging and external propagation.
+    - severity (Severity): Severity level used for logging and external propagation.
 
-    summary : str
-        One-line summary describing what occurred. Used for internal
-        logs and user-facing reports.
+    - summary (str): One-line summary describing what occurred. Used for internal logs and user-facing reports.
 
-    write_log : bool
-        Whether this event should be written to the internal logger.
+    - write_log (bool): Whether this event should be written to the internal logger.
 
-    propagate_state : bool
-        Whether this event should be propagated to external systems.
-        This may include updating PostgreSQL, publishing through Redis,
-        or notifying supported integrations.
+    - propagate_state (bool): Whether this event should be propagated to external systems.
+        - This may include updating PostgreSQL, publishing through Redis, or notifying supported integrations.
 
-    timestamp : datetime
-        UTC timestamp representing when the event was created.
+    - timestamp (datetime): UTC timestamp representing when the event was created.
     """
 
     event: str

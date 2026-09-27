@@ -13,7 +13,7 @@ from shared.utils.types import Severity
 
 @dataclass(slots=True, kw_only=True)
 class NoJobStateError(VireBaseError):
-    """Raised when Job state doesn't exist in the db."""
+    """Raise when job state does not exist in the database."""
 
     error_title: str = "Job State for the job does not exist."
     error_code: str = "VC-IN-NO_JOB_STATE"

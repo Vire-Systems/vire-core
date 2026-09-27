@@ -59,7 +59,7 @@ async def fetch_lockfile_name(
         if len(lockfiles) != 0:
             return lockfiles
 
-        raise errors.NoLockfileError(error_title = "No lockfiles found.")
+        raise errors.NoLockfileError(error_title="No lockfiles found.")
 
     except KeyError as key_error:
         raise GitProviderAPIError(
